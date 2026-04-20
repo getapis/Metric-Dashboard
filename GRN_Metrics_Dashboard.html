@@ -3,985 +3,549 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GRN Metrics Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>Studio Metrics Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --black: #0f0f0f;
-    --white: #fafaf8;
-    --green: #1a6b3c;
-    --green-light: #2d9e5e;
-    --green-pale: #eaf5ee;
-    --green-mid: #c2e8d0;
-    --amber: #c97c1a;
-    --amber-pale: #fdf3e0;
-    --red: #b83232;
-    --red-pale: #fdeaea;
-    --gray-100: #f4f4f2;
-    --gray-200: #e8e8e5;
-    --gray-400: #a0a09c;
-    --gray-600: #6b6b66;
-    --gray-800: #2e2e2c;
-    --border: 1px solid var(--gray-200);
-    --radius: 10px;
-    --radius-lg: 16px;
-    --shadow: 0 2px 12px rgba(0,0,0,0.06);
-    --shadow-md: 0 4px 24px rgba(0,0,0,0.10);
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--white);
-    color: var(--black);
-    font-size: 14px;
-    line-height: 1.6;
-  }
-
-  /* NAV */
-  nav {
-    position: sticky; top: 0; z-index: 100;
-    background: var(--black);
-    display: flex; align-items: center; gap: 0;
-    padding: 0 2rem;
-    border-bottom: 2px solid var(--green);
-  }
-
-  .nav-brand {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.25rem;
-    color: var(--white);
-    padding: 1rem 1.5rem 1rem 0;
-    border-right: 1px solid #333;
-    margin-right: 1.5rem;
-    letter-spacing: 0.02em;
-  }
-
-  .nav-brand span { color: var(--green-light); }
-
-  .nav-tab {
-    padding: 1rem 1.25rem;
-    color: var(--gray-400);
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    border-bottom: 3px solid transparent;
-    transition: all 0.2s;
-    text-decoration: none;
-    display: inline-block;
-  }
-
-  .nav-tab:hover { color: var(--white); }
-  .nav-tab.active { color: var(--green-light); border-bottom-color: var(--green-light); }
-
-  .nav-date {
-    margin-left: auto;
-    color: var(--gray-600);
-    font-size: 12px;
-    font-weight: 300;
-    letter-spacing: 0.04em;
-  }
-
-  /* PAGES */
-  .page { display: none; }
-  .page.active { display: block; }
-
-  /* HEADER BAND */
-  .page-header {
-    background: var(--black);
-    padding: 2rem 2.5rem;
-    display: flex; align-items: flex-end; justify-content: space-between;
-    gap: 1rem; flex-wrap: wrap;
-  }
-
-  .page-header h1 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 2.2rem;
-    color: var(--white);
-    font-weight: 400;
-    letter-spacing: -0.01em;
-  }
-
-  .page-header h1 em { color: var(--green-light); font-style: italic; }
-
-  .studio-name-display {
-    font-size: 12px;
-    color: var(--gray-400);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 500;
-  }
-
-  /* LAYOUT */
-  .container { padding: 2rem 2.5rem; max-width: 1400px; }
-
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-
-  .kpi-card {
-    background: var(--white);
-    border: var(--border);
-    border-radius: var(--radius);
-    padding: 1.25rem 1.5rem;
-    position: relative;
-    overflow: hidden;
-    transition: box-shadow 0.2s;
-  }
-
-  .kpi-card:hover { box-shadow: var(--shadow-md); }
-
-  .kpi-card::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0;
-    height: 3px;
-    background: var(--green);
-  }
-
-  .kpi-card.warn::before { background: var(--amber); }
-  .kpi-card.danger::before { background: var(--red); }
-
-  .kpi-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    color: var(--gray-600);
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-  }
-
-  .kpi-value {
-    font-family: 'DM Serif Display', serif;
-    font-size: 2rem;
-    color: var(--black);
-    line-height: 1;
-    margin-bottom: 0.3rem;
-  }
-
-  .kpi-sub {
-    font-size: 11px;
-    color: var(--gray-400);
-    font-weight: 400;
-  }
-
-  .kpi-badge {
-    display: inline-block;
-    font-size: 10px;
-    font-weight: 600;
-    padding: 2px 7px;
-    border-radius: 20px;
-    margin-top: 4px;
-  }
-
-  .badge-green { background: var(--green-pale); color: var(--green); }
-  .badge-amber { background: var(--amber-pale); color: var(--amber); }
-  .badge-red { background: var(--red-pale); color: var(--red); }
-
-  /* SECTIONS */
-  .section-label {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-weight: 600;
-    color: var(--gray-400);
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: var(--border);
-    display: flex; align-items: center; gap: 0.5rem;
-  }
-
-  .section-label::before {
-    content: '';
-    display: inline-block;
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--green);
-    flex-shrink: 0;
-  }
-
-  .two-col {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-  }
-
-  @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
-
-  /* FORM */
-  .form-card {
-    background: var(--white);
-    border: var(--border);
-    border-radius: var(--radius-lg);
-    padding: 1.75rem;
-    box-shadow: var(--shadow);
-  }
-
-  .form-card h3 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.15rem;
-    font-weight: 400;
-    color: var(--black);
-    margin-bottom: 1.25rem;
-    padding-bottom: 0.75rem;
-    border-bottom: var(--border);
-  }
-
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.85rem;
-  }
-
-  .form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
-  .form-grid.one { grid-template-columns: 1fr; }
-  .span-2 { grid-column: span 2; }
-  .span-3 { grid-column: span 3; }
-
-  label {
-    display: block;
-    font-size: 11px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--gray-600);
-    margin-bottom: 0.35rem;
-  }
-
-  input[type="text"],
-  input[type="number"],
-  input[type="date"],
-  input[type="email"],
-  input[type="tel"],
-  select,
-  textarea {
-    width: 100%;
-    padding: 0.6rem 0.85rem;
-    border: var(--border);
-    border-radius: 6px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    color: var(--black);
-    background: var(--gray-100);
-    transition: border-color 0.15s, background 0.15s;
-    outline: none;
-    appearance: none;
-  }
-
-  input:focus, select:focus, textarea:focus {
-    border-color: var(--green);
-    background: var(--white);
-    box-shadow: 0 0 0 3px rgba(26,107,60,0.08);
-  }
-
-  textarea { resize: vertical; min-height: 80px; }
-
-  .btn {
-    display: inline-flex; align-items: center; gap: 0.5rem;
-    padding: 0.7rem 1.5rem;
-    border: none; border-radius: 8px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px; font-weight: 500;
-    cursor: pointer; transition: all 0.15s;
-  }
-
-  .btn-primary {
-    background: var(--green);
-    color: var(--white);
-  }
-
-  .btn-primary:hover { background: var(--green-light); }
-
-  .btn-secondary {
-    background: var(--gray-100);
-    color: var(--gray-800);
-    border: var(--border);
-  }
-
-  .btn-secondary:hover { background: var(--gray-200); }
-
-  .btn-sm { padding: 0.4rem 0.9rem; font-size: 12px; }
-
-  .form-actions {
-    display: flex; gap: 0.75rem; margin-top: 1.25rem;
-    padding-top: 1rem; border-top: var(--border);
-  }
-
-  /* TABLE */
-  .table-wrap {
-    background: var(--white);
-    border: var(--border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow);
-  }
-
-  .table-header {
-    padding: 1rem 1.5rem;
-    display: flex; align-items: center; justify-content: space-between;
-    border-bottom: var(--border);
-    background: var(--gray-100);
-    gap: 1rem; flex-wrap: wrap;
-  }
-
-  .table-header h3 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.05rem;
-    font-weight: 400;
-    color: var(--black);
-  }
-
-  .filter-row {
-    display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;
-  }
-
-  .filter-row select, .filter-row input {
-    width: auto; padding: 0.4rem 0.75rem; font-size: 12px;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
-
-  thead th {
-    padding: 0.75rem 1rem;
-    text-align: left;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    color: var(--gray-600);
-    font-weight: 600;
-    background: var(--gray-100);
-    border-bottom: var(--border);
-    white-space: nowrap;
-  }
-
-  tbody tr {
-    border-bottom: var(--border);
-    transition: background 0.1s;
-  }
-
-  tbody tr:hover { background: var(--gray-100); }
-  tbody tr:last-child { border-bottom: none; }
-
-  tbody td {
-    padding: 0.75rem 1rem;
-    color: var(--gray-800);
-    vertical-align: top;
-  }
-
-  .empty-state {
-    text-align: center;
-    padding: 3rem 1rem;
-    color: var(--gray-400);
-  }
-
-  .empty-state svg { margin-bottom: 0.75rem; opacity: 0.3; }
-
-  /* TREND BAR */
-  .trend-bar-wrap { margin-bottom: 2rem; }
-
-  .week-chart {
-    display: flex; gap: 0.5rem; align-items: flex-end;
-    height: 80px; padding: 0 0 0.5rem;
-  }
-
-  .week-bar-col {
-    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
-  }
-
-  .week-bar {
-    width: 100%; border-radius: 4px 4px 0 0;
-    background: var(--green-mid);
-    transition: background 0.2s;
-    min-height: 4px;
-    cursor: default;
-    position: relative;
-  }
-
-  .week-bar.active { background: var(--green); }
-
-  .week-label {
-    font-size: 10px; color: var(--gray-400);
-    text-align: center; white-space: nowrap;
-  }
-
-  /* SCOREBOARD */
-  .score-table-wrap {
-    background: var(--white);
-    border: var(--border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow);
-    margin-bottom: 2rem;
-  }
-
-  .score-month-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 1rem 1.5rem;
-    background: var(--black);
-    color: var(--white);
-  }
-
-  .score-month-header h3 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.1rem;
-    font-weight: 400;
-    color: var(--white);
-  }
-
-  .net-gain-badge {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.4rem;
-    padding: 0.4rem 1.2rem;
-    border-radius: 8px;
-    border: 1px solid;
-  }
-
-  .net-gain-badge.positive { color: var(--green-light); border-color: var(--green); }
-  .net-gain-badge.negative { color: #f87171; border-color: var(--red); }
-  .net-gain-badge.zero { color: var(--gray-400); border-color: #444; }
-
-  .score-col-net { font-weight: 600; }
-  .score-col-net.pos { color: var(--green); }
-  .score-col-net.neg { color: var(--red); }
-
-  /* WAVE TEMPLATE */
-  .wave-member-row {
-    display: grid;
-    grid-template-columns: 36px 1fr 1fr 1fr 1fr 2fr 80px;
-    gap: 0.5rem;
-    align-items: center;
-    padding: 0.5rem 0;
-    border-bottom: var(--border);
-  }
-
-  .wave-member-row:last-child { border-bottom: none; }
-
-  .wave-check {
-    width: 22px; height: 22px;
-    border: 2px solid var(--gray-200);
-    border-radius: 5px;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.15s; flex-shrink: 0;
-    font-size: 12px; color: transparent;
-  }
-
-  .wave-check.checked {
-    background: var(--green); border-color: var(--green); color: white;
-  }
-
-  .rollover-badge {
-    display: inline-flex; align-items: center; gap: 4px;
-    font-size: 11px; font-weight: 600;
-    padding: 3px 10px; border-radius: 20px;
-    cursor: pointer; border: 1px solid;
-    transition: all 0.15s;
-  }
-
-  .rollover-badge.yes { background: var(--green-pale); color: var(--green); border-color: var(--green-mid); }
-  .rollover-badge.no { background: var(--red-pale); color: var(--red); border-color: #fca5a5; }
-
-  /* TOAST */
-  .toast {
-    position: fixed; bottom: 1.5rem; right: 1.5rem;
-    background: var(--black); color: var(--white);
-    padding: 0.75rem 1.25rem;
-    border-radius: 8px;
-    font-size: 13px; font-weight: 500;
-    opacity: 0; transform: translateY(10px);
-    transition: all 0.25s; z-index: 9999;
-    border-left: 3px solid var(--green);
-    max-width: 300px;
-  }
-
-  .toast.show { opacity: 1; transform: translateY(0); }
-
-  /* FILTERS */
-  .filters-bar {
-    display: flex; gap: 0.75rem; align-items: center;
-    padding: 1rem 2.5rem;
-    background: var(--gray-100);
-    border-bottom: var(--border);
-    flex-wrap: wrap;
-  }
-
-  .filters-bar label { margin: 0; text-transform: none; font-size: 12px; }
-
-  /* RESPONSIVE */
-  @media (max-width: 700px) {
-    .form-grid { grid-template-columns: 1fr; }
-    .form-grid.three { grid-template-columns: 1fr 1fr; }
-    .span-2, .span-3 { grid-column: span 1; }
-    .two-col { grid-template-columns: 1fr; }
-    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-    .container { padding: 1rem 1.25rem; }
-    .page-header { padding: 1.5rem 1.25rem; }
-    .filters-bar { padding: 0.75rem 1.25rem; }
-    nav { padding: 0 1rem; }
-  }
-
-  /* UTIL */
-  .text-green { color: var(--green); }
-  .text-red { color: var(--red); }
-  .text-amber { color: var(--amber); }
-  .muted { color: var(--gray-400); font-size: 12px; }
-  .divider { border: none; border-top: var(--border); margin: 1.5rem 0; }
-  .flex { display: flex; }
-  .gap-1 { gap: 0.75rem; }
-  .align-center { align-items: center; }
-  .mb-1 { margin-bottom: 1rem; }
-  .mb-2 { margin-bottom: 2rem; }
-  .mt-1 { margin-top: 1rem; }
-  .summary-totals {
-    display: grid; grid-template-columns: repeat(6, 1fr);
-    gap: 1rem; margin-bottom: 1.5rem;
-  }
-  .summary-totals .kpi-card::before { background: var(--green); }
+:root{--black:#111318;--dark:#1a1d24;--dark2:#22252e;--white:#f8f9fb;--off-white:#f0f1f5;--green:#16a34a;--green-d:#15803d;--green-pale:#dcfce7;--green-text:#14532d;--amber:#d97706;--amber-pale:#fef3c7;--amber-text:#78350f;--red:#dc2626;--red-pale:#fee2e2;--red-text:#7f1d1d;--blue:#2563eb;--blue-pale:#dbeafe;--blue-text:#1e3a8a;--gray-50:#f8f9fb;--gray-100:#eef0f5;--gray-200:#dde0ea;--gray-300:#c4c8d8;--gray-400:#9298ae;--gray-500:#6b7280;--gray-600:#4b5268;--gray-800:#1f2335;--border:1px solid var(--gray-200);--radius:8px;--radius-lg:14px;--shadow-sm:0 1px 4px rgba(0,0,0,.07);--shadow:0 2px 14px rgba(0,0,0,.09)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Barlow',sans-serif;background:var(--off-white);color:var(--gray-800);font-size:14px;line-height:1.55}
+/* NAV */
+nav{position:sticky;top:0;z-index:200;background:var(--black);display:flex;align-items:stretch;padding:0 1.75rem;border-bottom:3px solid var(--green);min-height:58px}
+.nav-logo{display:flex;align-items:center;gap:11px;padding:0 1.5rem 0 0;border-right:1px solid #2a2d38;margin-right:1rem;cursor:default}
+.logo-icon{width:36px;height:36px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-icon svg{width:22px;height:22px}
+.logo-text{display:flex;flex-direction:column;line-height:1.1}
+.logo-text .l1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.05rem;color:#fff;letter-spacing:.06em;text-transform:uppercase}
+.logo-text .l2{font-size:10px;font-weight:400;color:var(--gray-400);letter-spacing:.08em;text-transform:uppercase}
+.nav-tabs{display:flex;align-items:stretch}
+.nav-tab{display:flex;align-items:center;padding:0 1.1rem;color:var(--gray-400);cursor:pointer;font-size:12.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;border-bottom:3px solid transparent;margin-bottom:-3px;transition:color .15s,border-color .15s;white-space:nowrap;gap:7px;user-select:none}
+.nav-tab:hover{color:#fff}
+.nav-tab.active{color:var(--green);border-bottom-color:var(--green)}
+.nav-tab .ti{font-size:15px}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:1rem}
+.nav-date{font-size:11px;color:var(--gray-500);white-space:nowrap}
+.nav-stinput{background:#1e2130;border:1px solid #2e3347;color:#cdd0db;width:180px;font-size:12px;border-radius:6px;padding:.35rem .7rem;outline:none}
+.nav-stinput:focus{border-color:var(--green)}
+/* PAGES */
+.page{display:none}.page.active{display:block}
+/* PAGE HEADER */
+.ph{background:linear-gradient(135deg,var(--black) 0%,var(--dark2) 100%);padding:1.75rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;border-bottom:1px solid #2a2d38}
+.ph-left{display:flex;align-items:center;gap:14px}
+.ph-icon{width:48px;height:48px;border-radius:12px;background:rgba(22,163,74,.15);border:1px solid rgba(22,163,74,.3);display:flex;align-items:center;justify-content:center;font-size:22px}
+.ph-title h1{font-family:'Barlow Condensed',sans-serif;font-size:1.9rem;font-weight:700;color:#fff;letter-spacing:.02em;text-transform:uppercase;line-height:1}
+.ph-title .sub{font-size:12px;color:var(--gray-400);font-weight:400;letter-spacing:.05em}
+.ph-actions{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap}
+/* WRAP */
+.wrap{padding:1.5rem 2rem}
+/* SECTION */
+.sh{display:flex;align-items:center;gap:8px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.85rem}
+.sh::before{content:'';display:block;width:3px;height:18px;background:var(--green);border-radius:2px;flex-shrink:0}
+.sh.amber::before{background:var(--amber)}.sh.blue::before{background:var(--blue)}.sh.red::before{background:var(--red)}
+/* KPI */
+.kg{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:.85rem;margin-bottom:1.5rem}
+.kc{background:#fff;border:var(--border);border-radius:var(--radius);padding:1rem 1.1rem .9rem;position:relative;overflow:hidden;transition:box-shadow .15s,transform .15s}
+.kc:hover{box-shadow:var(--shadow);transform:translateY(-1px)}
+.kc .kt{position:absolute;top:0;left:0;right:0;height:3px;background:var(--green)}
+.kc.warn .kt{background:var(--amber)}.kc.danger .kt{background:var(--red)}.kc.info .kt{background:var(--blue)}
+.kl{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--gray-400);margin-bottom:4px}
+.kv{font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:700;line-height:1;color:var(--gray-800);margin-bottom:2px}
+.ks{font-size:10.5px;color:var(--gray-400)}
+.kb{display:inline-block;margin-top:5px;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px}
+.bg{background:var(--green-pale);color:var(--green-text)}.ba{background:var(--amber-pale);color:var(--amber-text)}.br{background:var(--red-pale);color:var(--red-text)}.bb{background:var(--blue-pale);color:var(--blue-text)}
+/* CARDS */
+.card{background:#fff;border:var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm)}
+.ch{padding:1rem 1.25rem;border-bottom:var(--border);display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.ch h3{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--gray-800);display:flex;align-items:center;gap:7px}
+.cb{padding:1.25rem}
+/* FORM SECTION */
+.fs{background:#fff;border:var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:.85rem}
+.fsh{display:flex;align-items:center;gap:10px;padding:.65rem 1.25rem;background:var(--gray-50);border-bottom:var(--border)}
+.fsi{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.fsi-g{background:var(--green-pale)}.fsi-a{background:var(--amber-pale)}.fsi-b{background:var(--blue-pale)}.fsi-r{background:var(--red-pale)}.fsi-n{background:var(--gray-100)}
+.fsh h4{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gray-600)}
+.fsb{padding:1rem 1.25rem 1.25rem}
+.fg{display:grid;gap:.75rem}.fg2{grid-template-columns:1fr 1fr}.fg3{grid-template-columns:1fr 1fr 1fr}.fg4{grid-template-columns:1fr 1fr 1fr 1fr}.fg1{grid-template-columns:1fr}
+.c2{grid-column:span 2}.c3{grid-column:span 3}.c4{grid-column:span 4}
+label.lb{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--gray-500);margin-bottom:4px}
+input[type=text],input[type=number],input[type=date],input[type=email],input[type=tel],select,textarea{width:100%;padding:.52rem .8rem;border:1px solid var(--gray-200);border-radius:6px;font-family:'Barlow',sans-serif;font-size:13px;color:var(--gray-800);background:var(--gray-50);transition:border-color .15s,box-shadow .15s;outline:none;appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--green);background:#fff;box-shadow:0 0 0 3px rgba(22,163,74,.1)}
+textarea{resize:vertical;min-height:70px}
+input[readonly]{background:var(--gray-100);color:var(--gray-400)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:.58rem 1.25rem;border:none;border-radius:7px;font-family:'Barlow',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;letter-spacing:.02em}
+.bp{background:var(--green);color:#fff}.bp:hover{background:var(--green-d)}
+.bg2{background:transparent;color:var(--gray-600);border:1px solid var(--gray-200)}.bg2:hover{background:var(--gray-100)}
+.bsm{padding:.35rem .85rem;font-size:12px}
+.ff{display:flex;gap:.7rem;padding:1rem 1.25rem;border-top:var(--border);background:var(--gray-50)}
+/* LAYOUT */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.75rem}
+.sg{margin-bottom:1.75rem}
+/* FILTER BAR */
+.fb{display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;background:var(--gray-50);border-bottom:var(--border);flex-wrap:wrap}
+.fb .fl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--gray-400)}
+.fb input,.fb select{width:auto;font-size:12px;padding:.38rem .7rem}
+/* TABLE */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{padding:.6rem .85rem;text-align:left;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--gray-500);background:var(--gray-50);border-bottom:var(--border);white-space:nowrap}
+tbody tr{border-bottom:var(--border);transition:background .1s}
+tbody tr:hover{background:var(--gray-50)}
+tbody tr:last-child{border-bottom:none}
+tbody td{padding:.65rem .85rem;color:var(--gray-600);vertical-align:middle}
+.er td{text-align:center;padding:2.5rem 1rem;color:var(--gray-400);font-size:13px}
+/* STATUS */
+.st{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px}
+.sg2{background:var(--green-pale);color:var(--green-text)}.sa{background:var(--amber-pale);color:var(--amber-text)}.sr{background:var(--red-pale);color:var(--red-text)}.sb{background:var(--blue-pale);color:var(--blue-text)}.sn{background:var(--gray-100);color:var(--gray-500)}
+/* TREND */
+.bc{display:flex;align-items:flex-end;gap:6px;height:72px}
+.bcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
+.brect{width:100%;border-radius:3px 3px 0 0;min-height:3px;transition:opacity .2s}
+.blbl{font-size:9px;color:var(--gray-400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:center}
+/* CALC PREVIEW */
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
+.ci{background:var(--gray-50);border:var(--border);border-radius:7px;padding:.75rem .9rem}
+.ci .cl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--gray-400);margin-bottom:2px}
+.ci .cv{font-family:'Barlow Condensed',sans-serif;font-size:1.45rem;font-weight:700;color:var(--gray-800)}
+/* SCOREBOARD */
+.sc-hd{display:flex;align-items:center;justify-content:space-between;padding:.9rem 1.25rem;background:var(--black);border-radius:var(--radius-lg) var(--radius-lg) 0 0;flex-wrap:wrap;gap:.75rem}
+.sc-hd h3{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;color:#fff;letter-spacing:.05em;text-transform:uppercase}
+.np{font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:700;padding:.3rem 1rem;border-radius:8px;border:1px solid}
+.np-p{color:#4ade80;border-color:#16a34a;background:rgba(22,163,74,.12)}.np-n{color:#f87171;border-color:#dc2626;background:rgba(220,38,38,.12)}.np-z{color:var(--gray-400);border-color:#333}
+/* WAVE */
+.wc{width:22px;height:22px;border:2px solid var(--gray-200);border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:transparent;transition:all .15s;flex-shrink:0}
+.wc.on{background:var(--green);border-color:var(--green);color:#fff}
+.rb{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;cursor:pointer;border:1px solid;transition:all .15s;display:inline-block}
+.rb-y{background:var(--green-pale);color:var(--green-text);border-color:#86efac}.rb-n{background:var(--red-pale);color:var(--red-text);border-color:#fca5a5}
+.wsg{display:grid;grid-template-columns:repeat(5,1fr);gap:.85rem;margin-bottom:1.5rem}
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;background:var(--black);color:#fff;padding:.7rem 1.1rem;border-radius:8px;font-size:13px;font-weight:500;border-left:4px solid var(--green);opacity:0;transform:translateY(8px);transition:all .22s;pointer-events:none;max-width:280px}
+.toast.show{opacity:1;transform:translateY(0)}
+/* UTIL */
+.tg{color:var(--green)!important}.tr2{color:var(--red)!important}.ta{color:var(--amber)!important}.tm{color:var(--gray-400)}
+.bold{font-weight:600}.dvd{border:none;border-top:var(--border);margin:1.25rem 0}
+@media(max-width:900px){.two-col{grid-template-columns:1fr}.fg3,.fg4{grid-template-columns:1fr 1fr}.wrap{padding:1rem}.ph{padding:1.25rem 1rem}}
 </style>
 </head>
 <body>
 
-<!-- NAVIGATION -->
+<!-- NAV -->
 <nav>
-  <div class="nav-brand">GRN <span>Metrics</span></div>
-  <a class="nav-tab active" onclick="showPage('dashboard')">Dashboard</a>
-  <a class="nav-tab" onclick="showPage('scoreboard')">Scoreboard</a>
-  <a class="nav-tab" onclick="showPage('wave')">Wave Template</a>
-  <div class="nav-date" id="nav-date"></div>
+  <div class="nav-logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 4v16M18 4v16M2 8h4M18 8h4M2 16h4M18 16h4M6 12h12"/>
+      </svg>
+    </div>
+    <div class="logo-text">
+      <span class="l1">Studio Metrics</span>
+      <span class="l2">Performance Dashboard</span>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="showPage('dashboard',this)"><span class="ti">📊</span> Dashboard</div>
+    <div class="nav-tab" onclick="showPage('scoreboard',this)"><span class="ti">🏆</span> Scoreboard</div>
+    <div class="nav-tab" onclick="showPage('rollover',this)"><span class="ti">🔄</span> Rollover</div>
+  </div>
+  <div class="nav-right">
+    <input class="nav-stinput" type="text" id="studio-global" placeholder="Studio name…" oninput="setStudio(this.value)">
+    <div class="nav-date" id="nav-date"></div>
+  </div>
 </nav>
 
-<!-- ═══════════════════════════════════════════════════
-     PAGE 1: DASHBOARD
-══════════════════════════════════════════════════════ -->
+<!-- ════════════════════════ PAGE: DASHBOARD ════════════════════════ -->
 <div class="page active" id="page-dashboard">
-  <div class="page-header">
-    <div>
-      <div class="studio-name-display" id="studio-display">Studio Name</div>
-      <h1>Weekly <em>Metrics</em></h1>
+  <div class="ph">
+    <div class="ph-left">
+      <div class="ph-icon">💪</div>
+      <div class="ph-title">
+        <div class="sub" id="dash-sub">Enter your studio name in the top bar →</div>
+        <h1>Gym / Studio Metrics</h1>
+      </div>
     </div>
-    <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
-      <input type="text" id="studio-name-input" placeholder="Enter studio name…" style="width:200px;background:#1a1a1a;border-color:#333;color:#fff;font-size:13px;" oninput="updateStudioName(this.value)">
-      <button class="btn btn-primary" onclick="scrollToForm('dash-form')">+ Log Weekly Data</button>
+    <div class="ph-actions">
+      <button class="btn bp" onclick="go('entry-form')">+ Log Weekly Data</button>
     </div>
   </div>
 
-  <!-- FILTERS -->
-  <div class="filters-bar">
-    <label>Filter by week:</label>
-    <input type="date" id="filter-date" onchange="renderDashboardTable()" style="width:180px;">
-    <label style="margin-left:1rem;">Show:</label>
-    <select id="filter-count" onchange="renderDashboardTable()" style="width:120px;">
-      <option value="10">Last 10 weeks</option>
-      <option value="4">Last 4 weeks</option>
-      <option value="all" selected>All entries</option>
-    </select>
-    <button class="btn btn-secondary btn-sm" onclick="clearDashFilter()">Clear filters</button>
-  </div>
+  <div class="wrap">
+    <!-- AT-A-GLANCE KPIs -->
+    <div class="sg">
+      <div class="sh">At-a-glance KPIs — most recent week</div>
+      <div class="kg">
+        <div class="kc info"><div class="kt"></div><div class="kl">Autopay members</div><div class="kv" id="k-autopay">—</div><div class="ks">Active on billing</div></div>
+        <div class="kc info"><div class="kt"></div><div class="kl">Suspended members</div><div class="kv" id="k-suspended">—</div><div class="ks">On hold</div></div>
+        <div class="kc"><div class="kt"></div><div class="kl">Total leads</div><div class="kv" id="k-leads">—</div><div class="ks">Paid + organic</div></div>
+        <div class="kc"><div class="kt"></div><div class="kl">Intro + pack sales</div><div class="kv" id="k-sales">—</div><div class="ks">This week</div></div>
+        <div class="kc" id="k-conv-card"><div class="kt"></div><div class="kl">Sales conversion %</div><div class="kv" id="k-conv">—</div><div class="ks">KPI target ≥ 30%</div></div>
+        <div class="kc"><div class="kt"></div><div class="kl">Attendance</div><div class="kv" id="k-attend">—</div><div class="ks">Weekly classes</div></div>
+        <div class="kc" id="k-avg-card"><div class="kt"></div><div class="kl">Avg visit / member</div><div class="kv" id="k-avg">—</div><div class="ks">Target: 3–4 visits</div></div>
+        <div class="kc" id="k-churn-card"><div class="kt"></div><div class="kl">Monthly churn %</div><div class="kv" id="k-churn">—</div><div class="ks">KPI target &lt; 5%</div></div>
+        <div class="kc"><div class="kt"></div><div class="kl">Facebook spend</div><div class="kv" id="k-fb">—</div><div class="ks">This week</div></div>
+        <div class="kc"><div class="kt"></div><div class="kl">Cost per lead</div><div class="kv" id="k-cpl">—</div><div class="ks">FB spend ÷ paid leads</div></div>
+        <div class="kc" id="k-net-card"><div class="kt"></div><div class="kl">Net gain / loss</div><div class="kv" id="k-net">—</div><div class="ks">Sales − weekly cancels</div></div>
+        <div class="kc"><div class="kt"></div><div class="kl">Membership sales</div><div class="kv" id="k-membsales">—</div><div class="ks">Full memberships</div></div>
+      </div>
+    </div>
 
-  <div class="container">
-
-    <!-- KPI SUMMARY CARDS -->
-    <div class="section-label mb-1">Live KPIs — current week</div>
-    <div class="kpi-grid" id="kpi-grid">
-      <div class="kpi-card"><div class="kpi-label">Autopay members</div><div class="kpi-value" id="kpi-autopay">—</div><div class="kpi-sub">Active on billing</div></div>
-      <div class="kpi-card" id="kpi-leads-card"><div class="kpi-label">Total leads</div><div class="kpi-value" id="kpi-leads">—</div><div class="kpi-sub">Paid + Organic</div></div>
-      <div class="kpi-card" id="kpi-sales-card"><div class="kpi-label">Intro + Pack sales</div><div class="kpi-value" id="kpi-sales">—</div><div class="kpi-sub">This week</div></div>
-      <div class="kpi-card" id="kpi-conv-card"><div class="kpi-label">Sales conversion</div><div class="kpi-value" id="kpi-conv">—</div><div class="kpi-sub">KPI target: 30%</div></div>
-      <div class="kpi-card" id="kpi-rollover-card"><div class="kpi-label">Rollover %</div><div class="kpi-value" id="kpi-rollover">—</div><div class="kpi-sub">KPI target: 80%</div></div>
-      <div class="kpi-card" id="kpi-churn-card"><div class="kpi-label">Monthly churn</div><div class="kpi-value" id="kpi-churn">—</div><div class="kpi-sub">KPI target: &lt;5%</div></div>
-      <div class="kpi-card"><div class="kpi-label">Attendance</div><div class="kpi-value" id="kpi-attend">—</div><div class="kpi-sub">Weekly classes</div></div>
-      <div class="kpi-card"><div class="kpi-label">Avg visit / member</div><div class="kpi-value" id="kpi-avgvisit">—</div><div class="kpi-sub">Target: 3–4 visits</div></div>
-      <div class="kpi-card"><div class="kpi-label">Net gain / loss</div><div class="kpi-value" id="kpi-net">—</div><div class="kpi-sub">Members this week</div></div>
-      <div class="kpi-card"><div class="kpi-label">Facebook spend</div><div class="kpi-value" id="kpi-fbspend">—</div><div class="kpi-sub">This week</div></div>
-      <div class="kpi-card"><div class="kpi-label">Cost per lead</div><div class="kpi-value" id="kpi-cpl">—</div><div class="kpi-sub">FB budget ÷ paid leads</div></div>
-      <div class="kpi-card"><div class="kpi-label">Membership sales</div><div class="kpi-value" id="kpi-membsales">—</div><div class="kpi-sub">Full memberships</div></div>
+    <!-- ROLLOVER PULL-THROUGH -->
+    <div class="sg">
+      <div class="sh blue">Rollover performance (from Rollover tab — KPI ≥ 80%)</div>
+      <div class="kg" style="grid-template-columns:repeat(4,1fr)">
+        <div class="kc info"><div class="kt"></div><div class="kl">Current wave</div><div class="kv" id="dr-wave">—</div><div class="ks">Week label</div></div>
+        <div class="kc info"><div class="kt"></div><div class="kl">Wave members</div><div class="kv" id="dr-total">—</div><div class="ks">In current wave</div></div>
+        <div class="kc"><div class="kt"></div><div class="kl">Rollovers</div><div class="kv" id="dr-rollovers">—</div><div class="ks">Converted to member</div></div>
+        <div class="kc" id="dr-pct-card"><div class="kt"></div><div class="kl">Rollover %</div><div class="kv" id="dr-pct">—</div><div class="ks">KPI target ≥ 80%</div></div>
+      </div>
     </div>
 
     <!-- TREND CHART -->
-    <div class="section-label mb-1">Net member trend — recent weeks</div>
-    <div class="trend-bar-wrap form-card mb-2" style="padding:1.25rem 1.5rem;">
-      <div class="week-chart" id="trend-chart">
-        <div class="empty-state" style="width:100%;font-size:12px;">No data yet — log your first week below</div>
+    <div class="sg">
+      <div class="sh">Net member trend — recent weeks</div>
+      <div class="card" style="padding:1.1rem 1.25rem">
+        <div class="bc" id="trend-chart"><div style="width:100%;text-align:center;color:var(--gray-400);font-size:13px;padding:.5rem 0">No data yet — log your first week below</div></div>
       </div>
     </div>
 
-    <div class="two-col">
-      <!-- ENTRY FORM -->
-      <div id="dash-form">
-        <div class="form-card">
-          <h3>Log Weekly Data</h3>
-          <div class="form-grid three">
-            <div>
-              <label>Week start date</label>
-              <input type="date" id="d-date">
-            </div>
-            <div>
-              <label>Rolling 30-day revenue ($)</label>
-              <input type="number" id="d-revenue" placeholder="0">
-            </div>
-            <div>
-              <label>Autopay members</label>
-              <input type="number" id="d-autopay" placeholder="250">
-            </div>
-            <div>
-              <label>Suspended members</label>
-              <input type="number" id="d-suspended" placeholder="0">
-            </div>
-            <div>
-              <label>Facebook budget spent ($)</label>
-              <input type="number" id="d-fbspend" placeholder="286">
-            </div>
-            <div>
-              <label>Meta paid leads</label>
-              <input type="number" id="d-paidleads" placeholder="13">
-            </div>
-            <div>
-              <label>Organic leads</label>
-              <input type="number" id="d-organicleads" placeholder="2">
-            </div>
-            <div>
-              <label>Intro + Pack sales</label>
-              <input type="number" id="d-sales" placeholder="11">
-            </div>
-            <div>
-              <label>Membership sales</label>
-              <input type="number" id="d-membsales" placeholder="2">
-            </div>
-            <div>
-              <label>Rollovers</label>
-              <input type="number" id="d-rollovers" placeholder="0">
-            </div>
-            <div>
-              <label>Attendance</label>
-              <input type="number" id="d-attendance" placeholder="500">
-            </div>
-            <div>
-              <label>Weekly cancels</label>
-              <input type="number" id="d-weeklycancels" placeholder="2">
-            </div>
-            <div>
-              <label>Cancels MTD</label>
-              <input type="number" id="d-cancelsmtd" placeholder="4">
-            </div>
-            <div>
-              <label>Sales value ($)</label>
-              <input type="number" id="d-salesvalue" placeholder="0">
-            </div>
-            <div></div>
-            <div class="span-3">
-              <label>Notes / description</label>
-              <textarea id="d-notes" placeholder="Add any context, highlights or action items for this week…"></textarea>
+    <!-- ENTRY FORM + LIVE CALC -->
+    <div class="two-col" style="align-items:start" id="entry-form">
+      <!-- LEFT: FORM -->
+      <div>
+        <div class="sh">Weekly data entry form</div>
+
+        <div class="fs">
+          <div class="fsh"><div class="fsi fsi-n">🏋️</div><h4>Studio information</h4></div>
+          <div class="fsb">
+            <div class="fg fg2">
+              <div><label class="lb">Week start date</label><input type="date" id="f-date"></div>
+              <div><label class="lb">Rolling 30-day revenue ($)</label><input type="number" id="f-revenue" placeholder="0" oninput="liveCalc()"></div>
             </div>
           </div>
-          <div class="form-actions">
-            <button class="btn btn-primary" onclick="submitDashEntry()">Save entry</button>
-            <button class="btn btn-secondary" onclick="clearDashForm()">Clear</button>
+        </div>
+
+        <div class="fs">
+          <div class="fsh"><div class="fsi fsi-b">👥</div><h4>Member base</h4></div>
+          <div class="fsb">
+            <div class="fg fg2">
+              <div><label class="lb">Autopay members (#)</label><input type="number" id="f-autopay" placeholder="250" oninput="liveCalc()"></div>
+              <div><label class="lb">Suspended members (#)</label><input type="number" id="f-suspended" placeholder="0" oninput="liveCalc()"></div>
+            </div>
           </div>
+        </div>
+
+        <div class="fs">
+          <div class="fsh"><div class="fsi fsi-a">📢</div><h4>1. Lead generation</h4></div>
+          <div class="fsb">
+            <div class="fg fg3">
+              <div><label class="lb">Facebook budget spent ($)</label><input type="number" id="f-fbspend" placeholder="286" oninput="liveCalc()"></div>
+              <div><label class="lb">Meta paid leads (#)</label><input type="number" id="f-paidleads" placeholder="13" oninput="liveCalc()"></div>
+              <div><label class="lb">Organic leads (#)</label><input type="number" id="f-organicleads" placeholder="2" oninput="liveCalc()"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fs">
+          <div class="fsh"><div class="fsi fsi-g">💰</div><h4>2. Lead follow-up / sales</h4></div>
+          <div class="fsb">
+            <div class="fg fg3">
+              <div><label class="lb">Intro + pack sales (#)</label><input type="number" id="f-sales" placeholder="11" oninput="liveCalc()"></div>
+              <div><label class="lb">Membership sales (#)</label><input type="number" id="f-membsales" placeholder="2" oninput="liveCalc()"></div>
+              <div><label class="lb">Sales value ($)</label><input type="number" id="f-salesvalue" placeholder="0" oninput="liveCalc()"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fs">
+          <div class="fsh"><div class="fsi fsi-b">🏃</div><h4>3. Engagement</h4></div>
+          <div class="fsb">
+            <div class="fg fg2">
+              <div><label class="lb">Weekly attendance (#)</label><input type="number" id="f-attend" placeholder="500" oninput="liveCalc()"></div>
+              <div><label class="lb">Avg visit / member (auto)</label><input type="number" id="f-avgvisit" readonly placeholder="calculated" style="background:var(--gray-100);color:var(--gray-400)"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fs">
+          <div class="fsh"><div class="fsi fsi-r">📉</div><h4>4. Churn</h4></div>
+          <div class="fsb">
+            <div class="fg fg3">
+              <div><label class="lb">Weekly cancels (#)</label><input type="number" id="f-weeklycancels" placeholder="2" oninput="liveCalc()"></div>
+              <div><label class="lb">Cancels MTD (#)</label><input type="number" id="f-cancelsmtd" placeholder="4" oninput="liveCalc()"></div>
+              <div><label class="lb">Monthly churn % (auto)</label><input type="number" id="f-churn-out" readonly placeholder="calculated" style="background:var(--gray-100);color:var(--gray-400)"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fs">
+          <div class="fsh"><div class="fsi fsi-n">📝</div><h4>Notes / actions</h4></div>
+          <div class="fsb"><textarea id="f-notes" placeholder="Add context, highlights, or action items for this week…"></textarea></div>
+        </div>
+
+        <div class="ff" style="background:#fff;border:var(--border);border-radius:var(--radius-lg)">
+          <button class="btn bp" onclick="submitDash()">💾 Save weekly entry</button>
+          <button class="btn bg2" onclick="clearDash()">Clear</button>
         </div>
       </div>
 
-      <!-- CALCULATED PREVIEW -->
+      <!-- RIGHT: LIVE CALC PREVIEW -->
       <div>
-        <div class="form-card">
-          <h3>Calculated metrics preview</h3>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;" id="calc-preview">
-            <div class="kpi-card" style="padding:0.85rem 1rem;">
-              <div class="kpi-label">Sales conversion %</div>
-              <div class="kpi-value" style="font-size:1.4rem;" id="calc-conv">—</div>
-              <div class="kpi-sub">Sales ÷ total leads</div>
-            </div>
-            <div class="kpi-card" style="padding:0.85rem 1rem;">
-              <div class="kpi-label">Cost per lead</div>
-              <div class="kpi-value" style="font-size:1.4rem;" id="calc-cpl">—</div>
-              <div class="kpi-sub">FB spend ÷ paid leads</div>
-            </div>
-            <div class="kpi-card" style="padding:0.85rem 1rem;">
-              <div class="kpi-label">Avg visit / member</div>
-              <div class="kpi-value" style="font-size:1.4rem;" id="calc-avg">—</div>
-              <div class="kpi-sub">Attendance ÷ autopay</div>
-            </div>
-            <div class="kpi-card" style="padding:0.85rem 1rem;">
-              <div class="kpi-label">Churn % (monthly)</div>
-              <div class="kpi-value" style="font-size:1.4rem;" id="calc-churn">—</div>
-              <div class="kpi-sub">Cancels MTD ÷ autopay</div>
-            </div>
-            <div class="kpi-card" style="padding:0.85rem 1rem;">
-              <div class="kpi-label">Net gain / loss</div>
-              <div class="kpi-value" style="font-size:1.4rem;" id="calc-net">—</div>
-              <div class="kpi-sub">Sales − cancels</div>
-            </div>
-            <div class="kpi-card" style="padding:0.85rem 1rem;">
-              <div class="kpi-label">Rollover %</div>
-              <div class="kpi-value" style="font-size:1.4rem;" id="calc-rollover">—</div>
-              <div class="kpi-sub">Rollovers ÷ sales</div>
+        <div class="sh">Calculated metrics (live preview)</div>
+        <div class="card" style="margin-bottom:1rem">
+          <div class="ch"><h3>📐 Auto-calculated formulas</h3></div>
+          <div class="cb">
+            <div class="cg">
+              <div class="ci"><div class="cl">Sales conversion %</div><div class="cv" id="lc-conv">—</div><div class="ks">Sales ÷ total leads × 100</div><div id="lc-conv-b" style="margin-top:4px"></div></div>
+              <div class="ci"><div class="cl">Cost per lead ($)</div><div class="cv" id="lc-cpl">—</div><div class="ks">FB spend ÷ paid leads</div></div>
+              <div class="ci"><div class="cl">Avg visit / member</div><div class="cv" id="lc-avg">—</div><div class="ks">Attendance ÷ autopay members</div><div id="lc-avg-b" style="margin-top:4px"></div></div>
+              <div class="ci"><div class="cl">Monthly churn %</div><div class="cv" id="lc-churn">—</div><div class="ks">Cancels MTD ÷ autopay × 100</div><div id="lc-churn-b" style="margin-top:4px"></div></div>
+              <div class="ci"><div class="cl">Net gain / loss</div><div class="cv" id="lc-net">—</div><div class="ks">Intro sales − weekly cancels</div></div>
+              <div class="ci"><div class="cl">Total leads</div><div class="cv" id="lc-leads">—</div><div class="ks">Paid leads + organic leads</div></div>
             </div>
           </div>
-          <p class="muted mt-1" style="padding-top:0.75rem;border-top:var(--border);">Formulas update live as you type in the form.</p>
+        </div>
+
+        <div class="card" style="margin-bottom:1rem">
+          <div class="ch"><h3>🎯 KPI colour guide</h3></div>
+          <div class="cb" style="display:flex;flex-direction:column;gap:.6rem">
+            <div style="display:flex;align-items:center;gap:10px;font-size:12px"><span class="st sg2">On target</span> Meets or exceeds KPI goal</div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:12px"><span class="st sa">Watch</span> Within 70% of target — needs attention</div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:12px"><span class="st sr">Off target</span> Below 70% of goal — action required</div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:12px"><span class="st sb">Info</span> Reference data — no KPI target</div>
+            <hr class="dvd" style="margin:.3rem 0">
+            <div style="font-size:11.5px;color:var(--gray-500);line-height:1.65"><strong>KPI targets from spreadsheet:</strong><br>
+              Sales conversion ≥ 30% &nbsp;|&nbsp; Rollover ≥ 80%<br>
+              Avg visit 3–4 per member &nbsp;|&nbsp; Monthly churn &lt; 5%</div>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- DATA LOG TABLE -->
-    <div class="section-label mb-1">Weekly entry log</div>
-    <div class="table-wrap mb-2">
-      <div class="table-header">
-        <h3>All weeks</h3>
-        <div class="filter-row">
-          <input type="date" id="filter-date2" onchange="renderDashboardTable()" placeholder="Filter by date">
-          <button class="btn btn-secondary btn-sm" onclick="exportCSV()">Export CSV</button>
+    <div class="sh">Weekly entry log</div>
+    <div class="card sg">
+      <div class="ch">
+        <h3>📋 All weekly entries</h3>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center">
+          <input type="date" id="f-filter-date" onchange="renderDashTable()" style="width:160px;font-size:12px">
+          <select id="f-filter-count" onchange="renderDashTable()" style="width:130px;font-size:12px">
+            <option value="all">All entries</option>
+            <option value="4">Last 4 weeks</option>
+            <option value="10">Last 10 weeks</option>
+          </select>
+          <button class="btn bg2 bsm" onclick="clearDashFilter()">Clear</button>
+          <button class="btn bg2 bsm" onclick="exportCSV()">⬇ CSV</button>
         </div>
       </div>
-      <div style="overflow-x:auto;">
-        <table id="dash-table">
-          <thead>
-            <tr>
-              <th>Week of</th>
-              <th>Autopay</th>
-              <th>Paid leads</th>
-              <th>Organic leads</th>
-              <th>Sales</th>
-              <th>Conv %</th>
-              <th>Rollovers</th>
-              <th>Rollover %</th>
-              <th>Attendance</th>
-              <th>Avg visit</th>
-              <th>Cancels</th>
-              <th>Churn %</th>
-              <th>Net</th>
-              <th>FB spend</th>
-              <th>CPL</th>
-              <th>Notes</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="dash-tbody">
-            <tr><td colspan="17"><div class="empty-state">No entries yet. Log your first week above.</div></td></tr>
-          </tbody>
+      <div class="tw">
+        <table>
+          <thead><tr>
+            <th>Week of</th><th>Autopay</th><th>Susp.</th><th>Paid leads</th><th>Organic</th><th>Total leads</th>
+            <th>Sales</th><th>Conv %</th><th>Attend.</th><th>Avg visit</th>
+            <th>W.Cancels</th><th>MTD</th><th>Churn %</th><th>Net</th>
+            <th>FB $</th><th>CPL</th><th>Revenue $</th><th>Notes</th><th></th>
+          </tr></thead>
+          <tbody id="dash-tbody"><tr class="er"><td colspan="19">No entries yet — log your first week above.</td></tr></tbody>
         </table>
       </div>
     </div>
-
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════
-     PAGE 2: SCOREBOARD
-══════════════════════════════════════════════════════ -->
+<!-- ════════════════════════ PAGE: SCOREBOARD ════════════════════════ -->
 <div class="page" id="page-scoreboard">
-  <div class="page-header">
-    <div>
-      <div class="studio-name-display" id="score-studio-display">Studio Name</div>
-      <h1>Monthly <em>Scoreboard</em></h1>
+  <div class="ph">
+    <div class="ph-left">
+      <div class="ph-icon">🏆</div>
+      <div class="ph-title">
+        <div class="sub" id="score-sub">Daily performance log</div>
+        <h1>Monthly Scoreboard</h1>
+      </div>
     </div>
-    <button class="btn btn-primary" onclick="scrollToForm('score-form')">+ Log Daily Score</button>
+    <div class="ph-actions">
+      <button class="btn bp" onclick="go('score-form')">+ Log Daily Score</button>
+    </div>
   </div>
 
-  <div class="container">
-
-    <!-- MONTHLY SUMMARY -->
-    <div class="section-label mb-1">Monthly totals</div>
-    <div class="summary-totals" id="score-summary">
-      <div class="kpi-card"><div class="kpi-label">Rollovers</div><div class="kpi-value" id="sc-rollovers">0</div></div>
-      <div class="kpi-card"><div class="kpi-label">Memberships</div><div class="kpi-value" id="sc-memberships">0</div></div>
-      <div class="kpi-card"><div class="kpi-label">Organic leads</div><div class="kpi-value" id="sc-organic">0</div></div>
-      <div class="kpi-card"><div class="kpi-label">Cancels</div><div class="kpi-value danger" id="sc-cancels">0</div></div>
-      <div class="kpi-card"><div class="kpi-label">Kickstarts</div><div class="kpi-value" id="sc-kickstarts">0</div></div>
-      <div class="kpi-card" id="sc-net-card"><div class="kpi-label">Net gain/loss</div><div class="kpi-value" id="sc-net">0</div></div>
+  <div class="wrap">
+    <!-- MONTHLY TOTALS -->
+    <div class="sg">
+      <div class="sh">Monthly totals</div>
+      <div class="kg" style="grid-template-columns:repeat(6,1fr)">
+        <div class="kc info"><div class="kt"></div><div class="kl">Rollovers</div><div class="kv" id="st-roll">0</div></div>
+        <div class="kc"><div class="kt"></div><div class="kl">Memberships</div><div class="kv" id="st-memb">0</div></div>
+        <div class="kc"><div class="kt"></div><div class="kl">Organic leads</div><div class="kv" id="st-org">0</div></div>
+        <div class="kc danger"><div class="kt"></div><div class="kl">Cancels</div><div class="kv" id="st-can">0</div></div>
+        <div class="kc warn"><div class="kt"></div><div class="kl">Kickstarts</div><div class="kv" id="st-kick">0</div></div>
+        <div class="kc" id="st-net-card"><div class="kt"></div><div class="kl">Net gain / loss</div><div class="kv" id="st-net">0</div></div>
+      </div>
     </div>
 
-    <!-- SCOREBOARD TABLE -->
-    <div class="score-table-wrap mb-2">
-      <div class="score-month-header">
-        <div style="display:flex;align-items:center;gap:1rem;">
-          <h3 id="score-month-title">Scoreboard</h3>
-          <select id="score-month-select" onchange="renderScoreTable()" style="background:#222;border-color:#444;color:#ccc;width:130px;font-size:12px;">
-          </select>
+    <!-- TABLE -->
+    <div class="sg">
+      <div class="sc-hd">
+        <h3 id="sc-title">Scoreboard</h3>
+        <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+          <select id="sc-month-sel" onchange="renderScoreTable()" style="background:#1e2130;border:1px solid #2e3347;color:#ccc;width:130px;font-size:12px;border-radius:6px;padding:.3rem .6rem;outline:none"></select>
+          <div class="np np-z" id="sc-net-pill">Net: 0</div>
         </div>
-        <div class="net-gain-badge zero" id="score-net-badge">Net: 0</div>
       </div>
-      <div style="overflow-x:auto;">
-        <table id="score-table">
-          <thead>
-            <tr>
-              <th>Day</th>
-              <th>Date</th>
-              <th>Rollovers</th>
-              <th>Memberships</th>
-              <th>Organic leads</th>
-              <th>Cancels</th>
-              <th>Kickstarts</th>
-              <th>Net</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="score-tbody">
-            <tr><td colspan="9"><div class="empty-state">No entries yet. Log your first day below.</div></td></tr>
-          </tbody>
+      <!-- DATE FILTER BAR -->
+      <div class="fb" style="border-radius:0;border-left:var(--border);border-right:var(--border)">
+        <span class="fl">Filter:</span>
+        <input type="date" id="sc-filter-date" onchange="renderScoreTable()" style="width:170px" placeholder="Specific date">
+        <select id="sc-filter-type" onchange="renderScoreTable()" style="width:170px">
+          <option value="all">All days</option>
+          <option value="positive">Net positive days ✓</option>
+          <option value="negative">Net negative days ✗</option>
+          <option value="zero">Net zero days</option>
+        </select>
+        <button class="btn bg2 bsm" onclick="clearScoreFilters()">Clear filters</button>
+      </div>
+      <div class="tw" style="border:var(--border);border-top:none;border-radius:0 0 var(--radius-lg) var(--radius-lg);overflow:hidden">
+        <table>
+          <thead><tr>
+            <th>Day</th><th>Date</th>
+            <th><span class="st sb" style="padding:2px 7px;font-size:10px">Rollovers</span></th>
+            <th>Memberships</th>
+            <th>Organic leads</th>
+            <th><span class="st sr" style="padding:2px 7px;font-size:10px">Cancels</span></th>
+            <th><span class="st sa" style="padding:2px 7px;font-size:10px">Kickstarts</span></th>
+            <th>Net</th><th></th>
+          </tr></thead>
+          <tbody id="score-tbody"><tr class="er"><td colspan="9">No entries yet — log your first day below.</td></tr></tbody>
         </table>
       </div>
     </div>
 
     <!-- ENTRY FORM -->
     <div id="score-form">
-      <div class="form-card">
-        <h3>Log daily score</h3>
-        <div class="form-grid three">
-          <div>
-            <label>Date</label>
-            <input type="date" id="sc-date">
-          </div>
-          <div>
-            <label>Rollovers</label>
-            <input type="number" id="sc-rollovers-in" placeholder="0" min="0">
-          </div>
-          <div>
-            <label>Memberships</label>
-            <input type="number" id="sc-memberships-in" placeholder="0" min="0">
-          </div>
-          <div>
-            <label>Organic leads</label>
-            <input type="number" id="sc-organic-in" placeholder="0" min="0">
-          </div>
-          <div>
-            <label>Cancels</label>
-            <input type="number" id="sc-cancels-in" placeholder="0" min="0">
-          </div>
-          <div>
-            <label>Kickstarts</label>
-            <input type="number" id="sc-kickstarts-in" placeholder="0" min="0">
+      <div class="sh">Log daily score</div>
+      <div class="fs">
+        <div class="fsh"><div class="fsi fsi-g">📅</div><h4>Daily entry — NET = rollovers + memberships + kickstarts − cancels</h4></div>
+        <div class="fsb">
+          <div class="fg fg4">
+            <div><label class="lb">Date</label><input type="date" id="sc-date"></div>
+            <div><label class="lb">Rollovers</label><input type="number" id="sc-roll" placeholder="0" min="0"></div>
+            <div><label class="lb">Memberships</label><input type="number" id="sc-memb" placeholder="0" min="0"></div>
+            <div><label class="lb">Organic leads</label><input type="number" id="sc-org" placeholder="0" min="0"></div>
+            <div><label class="lb">Cancels</label><input type="number" id="sc-can" placeholder="0" min="0"></div>
+            <div><label class="lb">Kickstarts</label><input type="number" id="sc-kick" placeholder="0" min="0"></div>
           </div>
         </div>
-        <div class="form-actions">
-          <button class="btn btn-primary" onclick="submitScoreEntry()">Save day</button>
-          <button class="btn btn-secondary" onclick="clearScoreForm()">Clear</button>
+        <div class="ff">
+          <button class="btn bp" onclick="submitScore()">💾 Save day</button>
+          <button class="btn bg2" onclick="clearScoreForm()">Clear</button>
         </div>
       </div>
     </div>
-
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════
-     PAGE 3: WAVE TEMPLATE
-══════════════════════════════════════════════════════ -->
-<div class="page" id="page-wave">
-  <div class="page-header">
-    <div>
-      <div class="studio-name-display" id="wave-studio-display">Studio Name</div>
-      <h1>Wave <em>Template</em></h1>
+<!-- ════════════════════════ PAGE: ROLLOVER ════════════════════════ -->
+<div class="page" id="page-rollover">
+  <div class="ph">
+    <div class="ph-left">
+      <div class="ph-icon">🔄</div>
+      <div class="ph-title">
+        <div class="sub">Trial → Member conversion tracking | Wave = one week of trial members</div>
+        <h1>Rollover Tracker</h1>
+      </div>
     </div>
-    <button class="btn btn-primary" onclick="addWaveMember()">+ Add member</button>
+    <div class="ph-actions">
+      <button class="btn bp" onclick="go('wave-add-form')">+ Add member</button>
+      <button class="btn bg2" onclick="newWave()">+ New wave</button>
+    </div>
   </div>
 
-  <div class="container">
+  <div class="wrap">
+    <!-- INFO BANNER -->
+    <div class="sg" style="background:var(--blue-pale);border:1px solid #93c5fd;border-radius:var(--radius-lg);padding:1rem 1.25rem;font-size:13px;color:var(--blue-text);line-height:1.65">
+      <strong>About Waves:</strong> A "Wave" represents one week of trial members. Wave 1 = first week of the month, Wave 2 = second week, and so on.
+      Track each member individually — tick "Inducted" when they attend, and set "Rollover" to Yes when they convert to a full membership.
+      The rollover % automatically appears on the main Dashboard.
+    </div>
 
-    <!-- WAVE SUMMARY -->
-    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:2rem;">
-      <div class="kpi-card">
-        <div class="kpi-label">Total wave</div>
-        <div class="kpi-value" id="wave-total">0</div>
-        <div class="kpi-sub">Members in wave</div>
+    <!-- WAVE SELECTOR + SUMMARY -->
+    <div class="sg">
+      <div class="sh blue">Wave summary</div>
+      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;flex-wrap:wrap">
+        <label class="lb" style="margin:0">Active wave:</label>
+        <select id="wave-sel" onchange="switchWave()" style="width:260px"></select>
       </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Checked in</div>
-        <div class="kpi-value" id="wave-checked">0</div>
-        <div class="kpi-sub">Inducted</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Rollovers</div>
-        <div class="kpi-value" id="wave-rollovers">0</div>
-        <div class="kpi-sub">Converted to full member</div>
-      </div>
-      <div class="kpi-card" id="wave-pct-card">
-        <div class="kpi-label">Rollover %</div>
-        <div class="kpi-value" id="wave-pct">—</div>
-        <div class="kpi-sub">Target: 80%</div>
+      <div class="wsg">
+        <div class="kc info"><div class="kt"></div><div class="kl">Wave</div><div class="kv" id="ws-wave">—</div><div class="ks">Current week label</div></div>
+        <div class="kc info"><div class="kt"></div><div class="kl">Members</div><div class="kv" id="ws-total">0</div><div class="ks">In this wave</div></div>
+        <div class="kc info"><div class="kt"></div><div class="kl">Inducted</div><div class="kv" id="ws-checked">0</div><div class="ks">Checked in</div></div>
+        <div class="kc"><div class="kt"></div><div class="kl">Rollovers</div><div class="kv" id="ws-rollovers">0</div><div class="ks">Converted to full member</div></div>
+        <div class="kc" id="ws-pct-card"><div class="kt"></div><div class="kl">Rollover %</div><div class="kv" id="ws-pct">—</div><div class="ks">KPI target ≥ 80%</div></div>
       </div>
     </div>
 
-    <!-- WAVE SETUP -->
-    <div class="two-col mb-2">
-      <div class="form-card">
-        <h3>Wave settings</h3>
-        <div class="form-grid">
-          <div>
-            <label>Induction date</label>
-            <input type="date" id="wave-induction-date" onchange="updateWaveHeader()">
+    <div class="two-col" style="align-items:start">
+      <!-- ADD MEMBER FORM -->
+      <div id="wave-add-form">
+        <div class="sh">Add member to active wave</div>
+        <div class="fs">
+          <div class="fsh"><div class="fsi fsi-g">👤</div><h4>Member details</h4></div>
+          <div class="fsb">
+            <div class="fg fg2">
+              <div><label class="lb">First name *</label><input type="text" id="wm-first" placeholder="First"></div>
+              <div><label class="lb">Last name</label><input type="text" id="wm-last" placeholder="Last"></div>
+              <div><label class="lb">Email</label><input type="email" id="wm-email" placeholder="email@…"></div>
+              <div><label class="lb">Phone</label><input type="tel" id="wm-phone" placeholder="04xx xxx xxx"></div>
+              <div><label class="lb">Specific goal</label><input type="text" id="wm-goal" placeholder="e.g. lose 5kg"></div>
+              <div><label class="lb">Their why</label><input type="text" id="wm-why" placeholder="e.g. confidence"></div>
+              <div class="c2"><label class="lb">Notes</label><input type="text" id="wm-notes" placeholder="Any notes…"></div>
+            </div>
           </div>
-          <div>
-            <label>Target (members)</label>
-            <input type="number" id="wave-target" placeholder="20" oninput="calcWave()">
+          <div class="ff">
+            <button class="btn bp" onclick="addWaveMember()">Add to wave</button>
+            <button class="btn bg2" onclick="clearWaveForm()">Clear</button>
           </div>
-          <div class="span-2">
-            <label>Studio name for this wave</label>
-            <input type="text" id="wave-studio-in" placeholder="Studio name…" oninput="updateWaveHeader()">
+        </div>
+
+        <div class="sh" style="margin-top:1.25rem">Wave settings</div>
+        <div class="fs">
+          <div class="fsh"><div class="fsi fsi-b">⚙️</div><h4>Current wave configuration</h4></div>
+          <div class="fsb">
+            <div class="fg fg2">
+              <div><label class="lb">Induction date</label><input type="date" id="wave-induction" onchange="saveWaveSettings()"></div>
+              <div><label class="lb">Target (members)</label><input type="number" id="wave-target" placeholder="20" oninput="saveWaveSettings();calcWave()"></div>
+            </div>
           </div>
         </div>
       </div>
-      <div class="form-card">
-        <h3>Add member to wave</h3>
-        <div class="form-grid">
-          <div><label>First name</label><input type="text" id="wm-first" placeholder="First"></div>
-          <div><label>Last name</label><input type="text" id="wm-last" placeholder="Last"></div>
-          <div><label>Email</label><input type="email" id="wm-email" placeholder="email@…"></div>
-          <div><label>Phone</label><input type="tel" id="wm-phone" placeholder="04xx…"></div>
-          <div><label>Specific goal</label><input type="text" id="wm-goal" placeholder="e.g. lose 5kg"></div>
-          <div><label>Their why</label><input type="text" id="wm-why" placeholder="e.g. confidence"></div>
-          <div class="span-2">
-            <label>Notes</label>
-            <input type="text" id="wm-notes" placeholder="Any notes…">
+
+      <!-- MEMBER TABLE -->
+      <div>
+        <div class="sh">Wave members</div>
+        <div class="card">
+          <div class="ch">
+            <h3>🧑‍🤝‍🧑 Member list</h3>
+            <span style="font-size:12px;color:var(--gray-400)" id="wave-ind-lbl"></span>
           </div>
-        </div>
-        <div class="form-actions" style="margin-top:0.75rem;padding-top:0.75rem;">
-          <button class="btn btn-primary" onclick="addWaveMemberFromForm()">Add to wave</button>
-          <button class="btn btn-secondary" onclick="clearWaveForm()">Clear</button>
+          <div class="tw">
+            <table>
+              <thead><tr>
+                <th>#</th><th>Inducted</th><th>First</th><th>Last</th><th>Phone</th><th>Goal</th><th>Notes</th><th>Rollover</th><th></th>
+              </tr></thead>
+              <tbody id="wave-tbody"><tr class="er"><td colspan="9">No members yet in this wave.</td></tr></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- WAVE MEMBER TABLE -->
-    <div class="section-label mb-1">Wave members</div>
-    <div class="table-wrap mb-2">
-      <div class="table-header">
-        <h3>Member list</h3>
-        <div style="display:flex;gap:0.5rem;">
-          <span class="muted" id="wave-induction-display"></span>
-        </div>
-      </div>
-      <div style="overflow-x:auto;">
+    <!-- ALL WAVES OVERVIEW -->
+    <div class="sh">All waves overview — rollover % by wave</div>
+    <div class="card sg">
+      <div class="tw">
         <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Inducted</th>
-              <th>First</th>
-              <th>Last</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Goal</th>
-              <th>Why</th>
-              <th>Notes</th>
-              <th>Rollover</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="wave-tbody">
-            <tr><td colspan="11"><div class="empty-state">No members yet. Add above or click "+ Add member".</div></td></tr>
-          </tbody>
+          <thead><tr>
+            <th>Wave</th><th>Induction date</th><th>Members</th><th>Inducted</th><th>Rollovers</th><th>Rollover %</th><th>Target</th><th>Status</th>
+          </tr></thead>
+          <tbody id="waves-all-tbody"><tr class="er"><td colspan="8">No waves yet.</td></tr></tbody>
         </table>
       </div>
     </div>
-
   </div>
 </div>
 
@@ -989,588 +553,412 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ═══════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════
-let dashData = JSON.parse(localStorage.getItem('grn_dash') || '[]');
-let scoreData = JSON.parse(localStorage.getItem('grn_score') || '[]');
-let waveData = JSON.parse(localStorage.getItem('grn_wave') || '[]');
-let waveSettings = JSON.parse(localStorage.getItem('grn_wave_settings') || '{}');
-let studioName = localStorage.getItem('grn_studio') || '';
+// ══════════ STATE ══════════
+let dashData  = JSON.parse(localStorage.getItem('gm_dash')   || '[]');
+let scoreData = JSON.parse(localStorage.getItem('gm_score')  || '[]');
+let wavesData = JSON.parse(localStorage.getItem('gm_waves')  || '[]');
+let activeWaveIdx = +localStorage.getItem('gm_awIdx') || 0;
+let studioName = localStorage.getItem('gm_studio') || '';
 
-// ═══════════════════════════════════════════════
-// NAVIGATION
-// ═══════════════════════════════════════════════
-function showPage(name) {
+// ══════════ INIT ══════════
+function init() {
+  const now = new Date();
+  document.getElementById('nav-date').textContent =
+    now.toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  const today = now.toISOString().split('T')[0];
+  ['f-date','sc-date'].forEach(id => { document.getElementById(id).value = today; });
+  if (studioName) { document.getElementById('studio-global').value = studioName; applyStudio(studioName); }
+  if (!wavesData.length) makeFirstWave();
+  buildWaveSel(); renderWaveUI();
+  refreshDashboard(); buildScoreSel(); refreshRollKPIs();
+}
+
+// ══════════ NAV ══════════
+function showPage(name, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
-  event.target.classList.add('active');
-  if (name === 'dashboard') { refreshDashboard(); }
-  if (name === 'scoreboard') { renderScoreMonthSelect(); renderScoreTable(); updateScoreSummary(); }
-  if (name === 'wave') { renderWaveTable(); calcWave(); }
+  document.getElementById('page-'+name).classList.add('active');
+  el.classList.add('active');
+  if (name === 'scoreboard') { buildScoreSel(); renderScoreTable(); updateScoreSums(); }
+  if (name === 'rollover')   { renderWaveUI(); }
+  if (name === 'dashboard')  { refreshDashboard(); refreshRollKPIs(); }
 }
 
-function scrollToForm(id) {
-  document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+function go(id) { const e = document.getElementById(id); if(e) e.scrollIntoView({behavior:'smooth',block:'start'}); }
+
+// ══════════ STUDIO ══════════
+function setStudio(v) {
+  studioName = v; localStorage.setItem('gm_studio', v);
+  document.getElementById('studio-global').value = v;
+  applyStudio(v);
+}
+function applyStudio(v) {
+  document.getElementById('dash-sub').textContent  = v || 'Enter your studio name in the top bar →';
+  document.getElementById('score-sub').textContent = v || 'Daily performance log';
 }
 
-// ═══════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════
-function init() {
-  // Date
-  const now = new Date();
-  document.getElementById('nav-date').textContent = now.toLocaleDateString('en-AU', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-  // Set default dates
-  const today = now.toISOString().split('T')[0];
-  document.getElementById('d-date').value = today;
-  document.getElementById('sc-date').value = today;
-  // Studio name
-  if (studioName) {
-    document.getElementById('studio-name-input').value = studioName;
-    updateStudioName(studioName);
-  }
-  // Wave settings restore
-  if (waveSettings.inductionDate) document.getElementById('wave-induction-date').value = waveSettings.inductionDate;
-  if (waveSettings.target) document.getElementById('wave-target').value = waveSettings.target;
-  if (waveSettings.studio) document.getElementById('wave-studio-in').value = waveSettings.studio;
-  // Attach live calc listeners
-  ['d-autopay','d-paidleads','d-organicleads','d-sales','d-fbspend','d-rollovers','d-attendance','d-cancelsmtd'].forEach(id => {
-    document.getElementById(id).addEventListener('input', updateCalcPreview);
-  });
-  refreshDashboard();
-  renderScoreMonthSelect();
-  calcWave();
+// ══════════ FORMULAS ══════════
+const fConv  = (s,l)   => l   ? (s/l)*100   : null;
+const fCPL   = (fb,pl) => pl  ? fb/pl       : null;
+const fAvg   = (a,ap)  => ap  ? a/ap        : null;
+const fChurn = (cm,ap) => ap  ? (cm/ap)*100 : null;
+const fNet   = (s,wc)  => (s||0)-(wc||0);
+const fRoll  = (r,t)   => t   ? (r/t)*100   : null;
+
+const pct  = (v,d=1) => (v===null||isNaN(v)) ? '—' : v.toFixed(d)+'%';
+const money= (v,d=0) => (v===null||isNaN(v)) ? '—' : '$'+v.toFixed(d);
+const num  = (v,d=1) => (v===null||isNaN(v)) ? '—' : v.toFixed(d);
+const s$   = (id,v)  => { const e=document.getElementById(id); if(e) e.textContent=v; };
+
+function kSt(val, target, higher) {
+  if (val===null) return '';
+  return higher
+    ? (val>=target ? 'green' : val>=target*.7 ? 'amber' : 'danger')
+    : (val<=target ? 'green' : val<=target*1.3 ? 'amber' : 'danger');
 }
 
-// ═══════════════════════════════════════════════
-// FORMULAS (mirrors spreadsheet)
-// ═══════════════════════════════════════════════
-function calcConversion(sales, totalLeads) {
-  if (!totalLeads) return null;
-  return (sales / totalLeads) * 100;
-}
-function calcCPL(fbSpend, paidLeads) {
-  if (!paidLeads) return null;
-  return fbSpend / paidLeads;
-}
-function calcAvgVisit(attendance, autopay) {
-  if (!autopay) return null;
-  return attendance / autopay;
-}
-function calcChurn(cancelsMTD, autopay) {
-  if (!autopay) return null;
-  return (cancelsMTD / autopay) * 100;
-}
-function calcNet(sales, weeklyCancels) {
-  return (sales || 0) - (weeklyCancels || 0);
-}
-function calcRollover(rollovers, sales) {
-  if (!sales) return null;
-  return (rollovers / sales) * 100;
+function applyKC(id, st) {
+  const e = document.getElementById(id); if(!e) return;
+  e.className = 'kc';
+  if (st==='amber') e.classList.add('warn');
+  else if (st==='danger') e.classList.add('danger');
+  else if (st==='info') e.classList.add('info');
 }
 
-function fmt(n, decimals = 0, prefix = '') {
-  if (n === null || n === undefined || isNaN(n)) return '—';
-  return prefix + Number(n).toFixed(decimals);
+function mkBadge(st) {
+  const map = {green:['bg','On target'], amber:['ba','Watch'], danger:['br','Off target']};
+  const [cls,txt] = map[st] || ['',''];
+  return txt ? `<span class="kb ${cls}">${txt}</span>` : '';
 }
 
-function pct(n) {
-  if (n === null || n === undefined || isNaN(n)) return '—';
-  return Number(n).toFixed(1) + '%';
+// ══════════ LIVE CALC ══════════
+function liveCalc() {
+  const ap  = +document.getElementById('f-autopay').value||0;
+  const pl  = +document.getElementById('f-paidleads').value||0;
+  const ol  = +document.getElementById('f-organicleads').value||0;
+  const s   = +document.getElementById('f-sales').value||0;
+  const fb  = +document.getElementById('f-fbspend').value||0;
+  const att = +document.getElementById('f-attend').value||0;
+  const wc  = +document.getElementById('f-weeklycancels').value||0;
+  const cm  = +document.getElementById('f-cancelsmtd').value||0;
+  const tl  = pl+ol;
+
+  const conv=fConv(s,tl), cpl=fCPL(fb,pl), avg=fAvg(att,ap), churn=fChurn(cm,ap), net=fNet(s,wc);
+
+  s$('lc-conv',  pct(conv));
+  s$('lc-cpl',   money(cpl,2));
+  s$('lc-avg',   num(avg));
+  s$('lc-churn', pct(churn));
+  s$('lc-leads', tl||'—');
+  const ne=document.getElementById('lc-net');
+  ne.textContent=net===0?'0':(net>0?'+':'')+net;
+  ne.style.color=net>0?'var(--green)':net<0?'var(--red)':'';
+
+  document.getElementById('f-avgvisit').value  = avg!==null ? avg.toFixed(2) : '';
+  document.getElementById('f-churn-out').value = churn!==null ? churn.toFixed(2) : '';
+
+  document.getElementById('lc-conv-b').innerHTML  = conv!==null  ? mkBadge(kSt(conv,30,true))  : '';
+  document.getElementById('lc-avg-b').innerHTML   = avg!==null   ? mkBadge(kSt(avg,3,true))    : '';
+  document.getElementById('lc-churn-b').innerHTML = churn!==null ? mkBadge(kSt(churn,5,false)) : '';
 }
 
-// ═══════════════════════════════════════════════
-// STUDIO NAME
-// ═══════════════════════════════════════════════
-function updateStudioName(val) {
-  studioName = val;
-  localStorage.setItem('grn_studio', val);
-  ['studio-display','score-studio-display','wave-studio-display'].forEach(id => {
-    document.getElementById(id).textContent = val || 'Studio Name';
-  });
+// ══════════ DASHBOARD SUBMIT ══════════
+function submitDash() {
+  const date=document.getElementById('f-date').value;
+  if(!date){toast('Please select a week start date');return;}
+  const ap =+document.getElementById('f-autopay').value||0;
+  const pl =+document.getElementById('f-paidleads').value||0;
+  const ol =+document.getElementById('f-organicleads').value||0;
+  const s  =+document.getElementById('f-sales').value||0;
+  const ms =+document.getElementById('f-membsales').value||0;
+  const fb =+document.getElementById('f-fbspend').value||0;
+  const att=+document.getElementById('f-attend').value||0;
+  const wc =+document.getElementById('f-weeklycancels').value||0;
+  const cm =+document.getElementById('f-cancelsmtd').value||0;
+  const tl =pl+ol;
+  const e={id:Date.now(),date,studio:studioName,
+    revenue:+document.getElementById('f-revenue').value||0,
+    autopay:ap, suspended:+document.getElementById('f-suspended').value||0,
+    fbspend:fb, paidleads:pl, organicleads:ol, totalleads:tl,
+    sales:s, membsales:ms, salesvalue:+document.getElementById('f-salesvalue').value||0,
+    attendance:att, weeklycancels:wc, cancelsmtd:cm,
+    notes:document.getElementById('f-notes').value.trim(),
+    conv:fConv(s,tl), cpl:fCPL(fb,pl), avg:fAvg(att,ap), churn:fChurn(cm,ap), net:fNet(s,wc)};
+  dashData.unshift(e);
+  localStorage.setItem('gm_dash',JSON.stringify(dashData));
+  refreshDashboard(); clearDash(); toast('Week saved ✓');
 }
 
-// ═══════════════════════════════════════════════
-// LIVE CALC PREVIEW
-// ═══════════════════════════════════════════════
-function updateCalcPreview() {
-  const autopay = +document.getElementById('d-autopay').value || 0;
-  const paid = +document.getElementById('d-paidleads').value || 0;
-  const organic = +document.getElementById('d-organicleads').value || 0;
-  const sales = +document.getElementById('d-sales').value || 0;
-  const fb = +document.getElementById('d-fbspend').value || 0;
-  const rollovers = +document.getElementById('d-rollovers').value || 0;
-  const attend = +document.getElementById('d-attendance').value || 0;
-  const cancelsMTD = +document.getElementById('d-cancelsmtd').value || 0;
-  const totalLeads = paid + organic;
-  const weeklyCancels = +document.getElementById('d-weeklycancels').value || 0;
-
-  document.getElementById('calc-conv').textContent = pct(calcConversion(sales, totalLeads));
-  document.getElementById('calc-cpl').textContent = fmt(calcCPL(fb, paid), 2, '$');
-  document.getElementById('calc-avg').textContent = fmt(calcAvgVisit(attend, autopay), 1);
-  document.getElementById('calc-churn').textContent = pct(calcChurn(cancelsMTD, autopay));
-  const net = calcNet(sales, weeklyCancels);
-  const netEl = document.getElementById('calc-net');
-  netEl.textContent = net >= 0 ? '+' + net : '' + net;
-  netEl.style.color = net > 0 ? 'var(--green)' : net < 0 ? 'var(--red)' : '';
-  document.getElementById('calc-rollover').textContent = pct(calcRollover(rollovers, sales));
+function clearDash() {
+  ['f-revenue','f-autopay','f-suspended','f-fbspend','f-paidleads','f-organicleads',
+   'f-sales','f-membsales','f-salesvalue','f-attend','f-weeklycancels','f-cancelsmtd',
+   'f-notes','f-avgvisit','f-churn-out'].forEach(id=>{document.getElementById(id).value='';});
+  liveCalc();
 }
 
-// ═══════════════════════════════════════════════
-// DASHBOARD SUBMIT
-// ═══════════════════════════════════════════════
-function submitDashEntry() {
-  const date = document.getElementById('d-date').value;
-  if (!date) { showToast('Please select a week start date'); return; }
-  const entry = {
-    id: Date.now(),
-    date,
-    revenue: +document.getElementById('d-revenue').value || 0,
-    autopay: +document.getElementById('d-autopay').value || 0,
-    suspended: +document.getElementById('d-suspended').value || 0,
-    fbspend: +document.getElementById('d-fbspend').value || 0,
-    paidleads: +document.getElementById('d-paidleads').value || 0,
-    organicleads: +document.getElementById('d-organicleads').value || 0,
-    sales: +document.getElementById('d-sales').value || 0,
-    membsales: +document.getElementById('d-membsales').value || 0,
-    rollovers: +document.getElementById('d-rollovers').value || 0,
-    attendance: +document.getElementById('d-attendance').value || 0,
-    weeklycancels: +document.getElementById('d-weeklycancels').value || 0,
-    cancelsmtd: +document.getElementById('d-cancelsmtd').value || 0,
-    salesvalue: +document.getElementById('d-salesvalue').value || 0,
-    notes: document.getElementById('d-notes').value.trim(),
-  };
-  // Computed fields
-  entry.totalleads = entry.paidleads + entry.organicleads;
-  entry.conv = calcConversion(entry.sales, entry.totalleads);
-  entry.cpl = calcCPL(entry.fbspend, entry.paidleads);
-  entry.avgvisit = calcAvgVisit(entry.attendance, entry.autopay);
-  entry.churn = calcChurn(entry.cancelsmtd, entry.autopay);
-  entry.net = calcNet(entry.sales, entry.weeklycancels);
-  entry.rollover = calcRollover(entry.rollovers, entry.sales);
+function clearDashFilter(){document.getElementById('f-filter-date').value='';document.getElementById('f-filter-count').value='all';renderDashTable();}
 
-  dashData.unshift(entry);
-  localStorage.setItem('grn_dash', JSON.stringify(dashData));
-  refreshDashboard();
-  clearDashForm();
-  showToast('Week saved successfully');
+// ══════════ DASHBOARD RENDER ══════════
+function refreshDashboard(){updateKPIs();renderDashTable();renderTrend();}
+
+function updateKPIs(){
+  if(!dashData.length) return;
+  const r=dashData[0];
+  s$('k-autopay', r.autopay||'—'); s$('k-suspended', r.suspended||'—');
+  s$('k-leads', r.totalleads||'—'); s$('k-sales', r.sales||'—');
+  s$('k-attend', r.attendance||'—'); s$('k-membsales', r.membsales||'—');
+  s$('k-fb', r.fbspend?'$'+r.fbspend:'—');
+  s$('k-conv', pct(r.conv)); applyKC('k-conv-card',kSt(r.conv,30,true));
+  s$('k-avg', num(r.avg)); applyKC('k-avg-card',kSt(r.avg,3,true));
+  s$('k-churn', pct(r.churn)); applyKC('k-churn-card',kSt(r.churn,5,false));
+  s$('k-cpl', r.cpl!==null?'$'+r.cpl.toFixed(2):'—');
+  const ne=document.getElementById('k-net');
+  ne.textContent=(r.net>=0?'+':'')+r.net;
+  ne.style.color=r.net>0?'var(--green)':r.net<0?'var(--red)':'';
+  const nc=document.getElementById('k-net-card');
+  if(nc){nc.classList.remove('warn','danger');if(r.net<0)nc.classList.add('danger');else if(r.net===0)nc.classList.add('warn');}
 }
 
-function clearDashForm() {
-  ['d-revenue','d-autopay','d-suspended','d-fbspend','d-paidleads','d-organicleads',
-   'd-sales','d-membsales','d-rollovers','d-attendance','d-weeklycancels',
-   'd-cancelsmtd','d-salesvalue','d-notes'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
-  updateCalcPreview();
+function refreshRollKPIs(){
+  if(!wavesData.length) return;
+  const w=wavesData[Math.min(activeWaveIdx,wavesData.length-1)];
+  const total=w.members.length, rollovers=w.members.filter(m=>m.rollover).length;
+  const rp=fRoll(rollovers,total);
+  s$('dr-wave',w.label||'—'); s$('dr-total',total); s$('dr-rollovers',rollovers); s$('dr-pct',rp!==null?pct(rp):'—');
+  applyKC('dr-pct-card',kSt(rp,80,true));
 }
 
-function clearDashFilter() {
-  document.getElementById('filter-date').value = '';
-  document.getElementById('filter-date2').value = '';
-  document.getElementById('filter-count').value = 'all';
-  renderDashboardTable();
-}
-
-// ═══════════════════════════════════════════════
-// DASHBOARD REFRESH
-// ═══════════════════════════════════════════════
-function refreshDashboard() {
-  updateKPICards();
-  renderDashboardTable();
-  renderTrendChart();
-}
-
-function updateKPICards() {
-  if (!dashData.length) return;
-  const latest = dashData[0];
-  document.getElementById('kpi-autopay').textContent = latest.autopay || '—';
-  document.getElementById('kpi-leads').textContent = latest.totalleads || '—';
-  document.getElementById('kpi-sales').textContent = latest.sales || '—';
-  document.getElementById('kpi-attend').textContent = latest.attendance || '—';
-  document.getElementById('kpi-membsales').textContent = latest.membsales || '—';
-  document.getElementById('kpi-fbspend').textContent = latest.fbspend ? '$' + latest.fbspend : '—';
-
-  // Conversion KPI
-  const conv = latest.conv;
-  document.getElementById('kpi-conv').textContent = conv !== null ? pct(conv) : '—';
-  styleKPI('kpi-conv-card', conv, 30, true);
-
-  // Rollover KPI
-  const roll = latest.rollover;
-  document.getElementById('kpi-rollover').textContent = roll !== null ? pct(roll) : '—';
-  styleKPI('kpi-rollover-card', roll, 80, true);
-
-  // Churn KPI
-  const churn = latest.churn;
-  document.getElementById('kpi-churn').textContent = churn !== null ? pct(churn) : '—';
-  styleKPI('kpi-churn-card', churn, 5, false);
-
-  // Avg visit
-  document.getElementById('kpi-avgvisit').textContent = latest.avgvisit !== null ? fmt(latest.avgvisit, 1) : '—';
-
-  // CPL
-  document.getElementById('kpi-cpl').textContent = latest.cpl !== null ? '$' + fmt(latest.cpl, 2) : '—';
-
-  // Net
-  const netEl = document.getElementById('kpi-net');
-  netEl.textContent = latest.net >= 0 ? '+' + latest.net : '' + latest.net;
-  netEl.style.color = latest.net > 0 ? 'var(--green)' : latest.net < 0 ? 'var(--red)' : '';
-}
-
-function styleKPI(cardId, val, threshold, higherIsBetter) {
-  const card = document.getElementById(cardId);
-  if (!card || val === null) return;
-  card.className = 'kpi-card';
-  if (higherIsBetter) {
-    if (val >= threshold) card.classList.add('');
-    else card.classList.add(val >= threshold * 0.7 ? 'warn' : 'danger');
-  } else {
-    if (val > threshold) card.classList.add('danger');
-    else if (val > threshold * 0.7) card.classList.add('warn');
-  }
-}
-
-function renderDashboardTable() {
-  const tbody = document.getElementById('dash-tbody');
-  let data = [...dashData];
-
-  const dateFilter = document.getElementById('filter-date').value || document.getElementById('filter-date2').value;
-  if (dateFilter) data = data.filter(r => r.date === dateFilter);
-
-  const countFilter = document.getElementById('filter-count').value;
-  if (countFilter !== 'all') data = data.slice(0, +countFilter);
-
-  if (!data.length) {
-    tbody.innerHTML = '<tr><td colspan="17"><div class="empty-state">No entries match the current filters.</div></td></tr>';
-    return;
-  }
-
-  tbody.innerHTML = data.map((r, i) => {
-    const net = r.net;
-    const netCls = net > 0 ? 'text-green' : net < 0 ? 'text-red' : '';
+function renderDashTable(){
+  const tbody=document.getElementById('dash-tbody');
+  let data=[...dashData];
+  const fd=document.getElementById('f-filter-date').value; if(fd) data=data.filter(r=>r.date===fd);
+  const fc=document.getElementById('f-filter-count').value; if(fc!=='all') data=data.slice(0,+fc);
+  if(!data.length){tbody.innerHTML='<tr class="er"><td colspan="19">No entries match current filters.</td></tr>';return;}
+  tbody.innerHTML=data.map(r=>{
+    const nc=r.net>0?'tg bold':r.net<0?'tr2 bold':'';
+    const cb=r.conv!==null?sBadge(kSt(r.conv,30,true)):'';
+    const chu=r.churn!==null?sBadge(kSt(r.churn,5,false)):'';
     return `<tr>
-      <td>${formatDate(r.date)}</td>
-      <td>${r.autopay}</td>
-      <td>${r.paidleads}</td>
-      <td>${r.organicleads}</td>
-      <td>${r.sales}</td>
-      <td>${pct(r.conv)}</td>
-      <td>${r.rollovers}</td>
-      <td>${pct(r.rollover)}</td>
-      <td>${r.attendance}</td>
-      <td>${fmt(r.avgvisit,1)}</td>
-      <td>${r.weeklycancels}</td>
-      <td>${pct(r.churn)}</td>
-      <td class="${netCls}">${net >= 0 ? '+' : ''}${net}</td>
-      <td>$${r.fbspend}</td>
-      <td>${r.cpl !== null ? '$'+fmt(r.cpl,2) : '—'}</td>
-      <td style="max-width:200px;white-space:normal;font-size:12px;color:var(--gray-600);">${r.notes || ''}</td>
-      <td><button class="btn btn-secondary btn-sm" onclick="deleteEntry('dash',${r.id})">✕</button></td>
+      <td><strong>${fd8(r.date)}</strong></td>
+      <td>${r.autopay}</td><td>${r.suspended}</td>
+      <td>${r.paidleads}</td><td>${r.organicleads}</td><td>${r.totalleads}</td>
+      <td>${r.sales}</td><td>${pct(r.conv)} ${cb}</td>
+      <td>${r.attendance}</td><td>${num(r.avg)}</td>
+      <td>${r.weeklycancels}</td><td>${r.cancelsmtd}</td>
+      <td>${pct(r.churn)} ${chu}</td>
+      <td class="${nc}">${r.net>=0?'+':''}${r.net}</td>
+      <td>$${r.fbspend}</td><td>${r.cpl!==null?'$'+r.cpl.toFixed(2):'—'}</td>
+      <td>$${r.revenue}</td>
+      <td style="font-size:12px;max-width:150px;white-space:normal;color:var(--gray-400)">${r.notes}</td>
+      <td><button class="btn bg2 bsm" onclick="delDash(${r.id})">✕</button></td>
     </tr>`;
   }).join('');
 }
 
-function renderTrendChart() {
-  const chart = document.getElementById('trend-chart');
-  const recent = [...dashData].slice(0, 12).reverse();
-  if (!recent.length) {
-    chart.innerHTML = '<div class="empty-state" style="width:100%;font-size:12px;">No data yet — log your first week below</div>';
-    return;
-  }
-  const maxAbs = Math.max(...recent.map(r => Math.abs(r.net || 0)), 1);
-  chart.innerHTML = recent.map((r, i) => {
-    const net = r.net || 0;
-    const h = Math.max(4, Math.round((Math.abs(net) / maxAbs) * 60));
-    const color = net > 0 ? 'var(--green)' : net < 0 ? 'var(--red)' : 'var(--gray-200)';
-    const isLast = i === recent.length - 1;
-    return `<div class="week-bar-col">
-      <div title="Net: ${net > 0 ? '+' : ''}${net}" style="width:100%;height:${h}px;border-radius:4px 4px 0 0;background:${color};opacity:${isLast ? 1 : 0.5};"></div>
-      <div class="week-label">${formatDateShort(r.date)}</div>
-    </div>`;
+function sBadge(st){
+  const m={green:['sg2','✓'],amber:['sa','!'],danger:['sr','✗']};
+  const [c,t]=m[st]||['sn','?'];
+  return `<span class="st ${c}" style="padding:1px 5px;font-size:10px">${t}</span>`;
+}
+
+function renderTrend(){
+  const ch=document.getElementById('trend-chart');
+  const rec=[...dashData].slice(0,12).reverse();
+  if(!rec.length){ch.innerHTML='<div style="width:100%;text-align:center;color:var(--gray-400);font-size:13px;padding:.5rem 0">No data yet</div>';return;}
+  const maxA=Math.max(...rec.map(r=>Math.abs(r.net||0)),1);
+  ch.innerHTML=rec.map((r,i)=>{
+    const n=r.net||0, h=Math.max(3,Math.round((Math.abs(n)/maxA)*60));
+    const col=n>0?'var(--green)':n<0?'var(--red)':'var(--gray-200)';
+    return `<div class="bcol"><div class="brect" title="${fd4(r.date)}: ${n>0?'+':''}${n}" style="height:${h}px;background:${col};opacity:${i===rec.length-1?1:.55}"></div><div class="blbl">${fd4(r.date)}</div></div>`;
   }).join('');
 }
 
-// ═══════════════════════════════════════════════
-// SCOREBOARD
-// ═══════════════════════════════════════════════
-function submitScoreEntry() {
-  const date = document.getElementById('sc-date').value;
-  if (!date) { showToast('Please select a date'); return; }
-  const entry = {
-    id: Date.now(),
-    date,
-    rollovers: +document.getElementById('sc-rollovers-in').value || 0,
-    memberships: +document.getElementById('sc-memberships-in').value || 0,
-    organic: +document.getElementById('sc-organic-in').value || 0,
-    cancels: +document.getElementById('sc-cancels-in').value || 0,
-    kickstarts: +document.getElementById('sc-kickstarts-in').value || 0,
-  };
-  entry.net = entry.rollovers + entry.memberships + entry.kickstarts - entry.cancels;
-  scoreData.push(entry);
-  scoreData.sort((a,b) => a.date.localeCompare(b.date));
-  localStorage.setItem('grn_score', JSON.stringify(scoreData));
-  renderScoreMonthSelect();
-  renderScoreTable();
-  updateScoreSummary();
-  clearScoreForm();
-  showToast('Day saved');
+function delDash(id){if(!confirm('Delete?'))return;dashData=dashData.filter(r=>r.id!==id);localStorage.setItem('gm_dash',JSON.stringify(dashData));refreshDashboard();toast('Deleted');}
+
+// ══════════ SCOREBOARD ══════════
+function submitScore(){
+  const date=document.getElementById('sc-date').value; if(!date){toast('Select a date');return;}
+  const roll=+document.getElementById('sc-roll').value||0, memb=+document.getElementById('sc-memb').value||0;
+  const org=+document.getElementById('sc-org').value||0, can=+document.getElementById('sc-can').value||0;
+  const kick=+document.getElementById('sc-kick').value||0;
+  const e={id:Date.now(),date,roll,memb,org,can,kick,net:roll+memb+kick-can};
+  scoreData.push(e); scoreData.sort((a,b)=>a.date.localeCompare(b.date));
+  localStorage.setItem('gm_score',JSON.stringify(scoreData));
+  buildScoreSel(); renderScoreTable(); updateScoreSums(); clearScoreForm(); toast('Day saved ✓');
 }
 
-function clearScoreForm() {
-  ['sc-rollovers-in','sc-memberships-in','sc-organic-in','sc-cancels-in','sc-kickstarts-in'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
+function clearScoreForm(){['sc-roll','sc-memb','sc-org','sc-can','sc-kick'].forEach(id=>{document.getElementById(id).value='';});}
+function clearScoreFilters(){document.getElementById('sc-filter-date').value='';document.getElementById('sc-filter-type').value='all';renderScoreTable();}
+
+function buildScoreSel(){
+  const sel=document.getElementById('sc-month-sel');
+  const months=[...new Set(scoreData.map(r=>r.date.slice(0,7)))].sort().reverse();
+  sel.innerHTML=months.length?months.map(m=>`<option value="${m}">${fmtMonth(m)}</option>`).join(''):'<option value="">No data</option>';
 }
 
-function renderScoreMonthSelect() {
-  const sel = document.getElementById('score-month-select');
-  const months = [...new Set(scoreData.map(r => r.date.slice(0,7)))].sort().reverse();
-  if (!months.length) {
-    sel.innerHTML = '<option value="">All</option>';
-    return;
-  }
-  sel.innerHTML = months.map(m => `<option value="${m}">${formatMonth(m)}</option>`).join('');
-}
-
-function renderScoreTable() {
-  const tbody = document.getElementById('score-tbody');
-  const sel = document.getElementById('score-month-select').value;
-  let data = sel ? scoreData.filter(r => r.date.startsWith(sel)) : scoreData;
-
-  if (!data.length) {
-    tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state">No entries for this month.</div></td></tr>';
-    document.getElementById('score-net-badge').textContent = 'Net: 0';
-    return;
-  }
-
-  let totalNet = 0;
-  tbody.innerHTML = data.map(r => {
-    totalNet += r.net;
-    const netCls = r.net > 0 ? 'pos' : r.net < 0 ? 'neg' : '';
-    const d = new Date(r.date + 'T00:00:00');
-    const dayName = d.toLocaleDateString('en-AU', { weekday:'short' });
+function renderScoreTable(){
+  const tbody=document.getElementById('score-tbody');
+  const sm=document.getElementById('sc-month-sel').value;
+  const fd=document.getElementById('sc-filter-date').value;
+  const ft=document.getElementById('sc-filter-type').value;
+  let data=sm?scoreData.filter(r=>r.date.startsWith(sm)):scoreData;
+  if(fd) data=data.filter(r=>r.date===fd);
+  if(ft==='positive') data=data.filter(r=>r.net>0);
+  else if(ft==='negative') data=data.filter(r=>r.net<0);
+  else if(ft==='zero') data=data.filter(r=>r.net===0);
+  updateScoreSums(data);
+  if(!data.length){tbody.innerHTML='<tr class="er"><td colspan="9">No entries match current filters.</td></tr>';
+    document.getElementById('sc-net-pill').textContent='Net: 0';document.getElementById('sc-net-pill').className='np np-z';return;}
+  let total=data.reduce((a,r)=>a+r.net,0);
+  tbody.innerHTML=data.map(r=>{
+    const d=new Date(r.date+'T00:00:00'), day=d.toLocaleDateString('en-AU',{weekday:'short'});
+    const netBadge=r.net>0?`<span class="st sg2">+${r.net}</span>`:r.net<0?`<span class="st sr">${r.net}</span>`:`<span class="st sn">0</span>`;
     return `<tr>
-      <td>${dayName}</td>
-      <td>${formatDate(r.date)}</td>
-      <td>${r.rollovers}</td>
-      <td>${r.memberships}</td>
-      <td>${r.organic}</td>
-      <td>${r.cancels}</td>
-      <td>${r.kickstarts}</td>
-      <td class="score-col-net ${netCls}">${r.net >= 0 ? '+' : ''}${r.net}</td>
-      <td><button class="btn btn-secondary btn-sm" onclick="deleteEntry('score',${r.id})">✕</button></td>
+      <td>${day}</td><td>${fd8(r.date)}</td>
+      <td>${r.roll?`<span class="st sb">${r.roll}</span>`:0}</td>
+      <td>${r.memb}</td><td>${r.org}</td>
+      <td>${r.can?`<span class="st sr">${r.can}</span>`:0}</td>
+      <td>${r.kick?`<span class="st sa">${r.kick}</span>`:0}</td>
+      <td>${netBadge}</td>
+      <td><button class="btn bg2 bsm" onclick="delScore(${r.id})">✕</button></td>
     </tr>`;
   }).join('');
-
-  const badge = document.getElementById('score-net-badge');
-  badge.textContent = 'Net: ' + (totalNet >= 0 ? '+' : '') + totalNet;
-  badge.className = 'net-gain-badge ' + (totalNet > 0 ? 'positive' : totalNet < 0 ? 'negative' : 'zero');
+  const pill=document.getElementById('sc-net-pill');
+  pill.textContent='Net: '+(total>=0?'+':'')+total;
+  pill.className='np '+(total>0?'np-p':total<0?'np-n':'np-z');
 }
 
-function updateScoreSummary() {
-  const sel = document.getElementById('score-month-select').value;
-  let data = sel ? scoreData.filter(r => r.date.startsWith(sel)) : scoreData;
-  const sum = (key) => data.reduce((a,r) => a + (r[key] || 0), 0);
-  document.getElementById('sc-rollovers').textContent = sum('rollovers');
-  document.getElementById('sc-memberships').textContent = sum('memberships');
-  document.getElementById('sc-organic').textContent = sum('organic');
-  document.getElementById('sc-cancels').textContent = sum('cancels');
-  document.getElementById('sc-kickstarts').textContent = sum('kickstarts');
-  const net = sum('net');
-  const netEl = document.getElementById('sc-net');
-  netEl.textContent = (net >= 0 ? '+' : '') + net;
-  netEl.style.color = net > 0 ? 'var(--green)' : net < 0 ? 'var(--red)' : '';
+function updateScoreSums(data){
+  const sm=document.getElementById('sc-month-sel').value;
+  const d=data||(sm?scoreData.filter(r=>r.date.startsWith(sm)):scoreData);
+  const sum=k=>d.reduce((a,r)=>a+(r[k]||0),0);
+  s$('st-roll',sum('roll')); s$('st-memb',sum('memb')); s$('st-org',sum('org')); s$('st-can',sum('can')); s$('st-kick',sum('kick'));
+  const net=sum('net'), el=document.getElementById('st-net');
+  el.textContent=(net>=0?'+':'')+net; el.style.color=net>0?'var(--green)':net<0?'var(--red)':'';
+  const c=document.getElementById('st-net-card'); if(!c) return;
+  c.classList.remove('warn','danger'); if(net<0)c.classList.add('danger'); else if(net===0)c.classList.add('warn');
 }
 
-// ═══════════════════════════════════════════════
-// WAVE TEMPLATE
-// ═══════════════════════════════════════════════
-function addWaveMemberFromForm() {
-  const first = document.getElementById('wm-first').value.trim();
-  if (!first) { showToast('First name is required'); return; }
-  const member = {
-    id: Date.now(),
-    checked: false,
-    first,
-    last: document.getElementById('wm-last').value.trim(),
-    email: document.getElementById('wm-email').value.trim(),
-    phone: document.getElementById('wm-phone').value.trim(),
-    goal: document.getElementById('wm-goal').value.trim(),
-    why: document.getElementById('wm-why').value.trim(),
-    notes: document.getElementById('wm-notes').value.trim(),
-    rollover: false,
-  };
-  waveData.push(member);
-  saveWave();
-  renderWaveTable();
-  calcWave();
-  clearWaveForm();
-  showToast('Member added to wave');
+function delScore(id){if(!confirm('Delete?'))return;scoreData=scoreData.filter(r=>r.id!==id);localStorage.setItem('gm_score',JSON.stringify(scoreData));buildScoreSel();renderScoreTable();updateScoreSums();toast('Deleted');}
+
+// ══════════ ROLLOVER / WAVE ══════════
+function makeFirstWave(){
+  const now=new Date();
+  wavesData.push({id:Date.now(),label:'Wave 1 — '+now.toLocaleDateString('en-AU',{month:'long',year:'numeric'}),inductionDate:now.toISOString().split('T')[0],target:20,members:[]});
+  saveWaves();
+}
+function saveWaves(){localStorage.setItem('gm_waves',JSON.stringify(wavesData));}
+function saveWIdx(){localStorage.setItem('gm_awIdx',activeWaveIdx);}
+
+function buildWaveSel(){
+  const sel=document.getElementById('wave-sel');
+  sel.innerHTML=wavesData.map((w,i)=>`<option value="${i}">${w.label}</option>`).join('');
+  sel.value=Math.min(activeWaveIdx,wavesData.length-1);
 }
 
-function addWaveMember() {
-  document.getElementById('wm-first').focus();
-  document.querySelector('[id="wm-first"]').closest('.form-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+function switchWave(){activeWaveIdx=+document.getElementById('wave-sel').value;saveWIdx();renderWaveUI();refreshRollKPIs();}
+
+function newWave(){
+  const n=wavesData.length+1;
+  const now=new Date();
+  const label=prompt('Name this wave (e.g. "Wave 2 — May 2025"):',`Wave ${n} — ${now.toLocaleDateString('en-AU',{month:'long',year:'numeric'})}`);
+  if(!label) return;
+  wavesData.push({id:Date.now(),label,inductionDate:now.toISOString().split('T')[0],target:20,members:[]});
+  activeWaveIdx=wavesData.length-1; saveWaves(); saveWIdx();
+  buildWaveSel(); renderWaveUI(); toast('New wave created: '+label);
 }
 
-function clearWaveForm() {
-  ['wm-first','wm-last','wm-email','wm-phone','wm-goal','wm-why','wm-notes'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
+function renderWaveUI(){
+  const w=wavesData[Math.min(activeWaveIdx,wavesData.length-1)]; if(!w) return;
+  document.getElementById('wave-sel').value=activeWaveIdx;
+  document.getElementById('wave-induction').value=w.inductionDate||'';
+  document.getElementById('wave-target').value=w.target||20;
+  calcWave(); renderWaveMemberTable(); renderWavesAll();
 }
 
-function toggleWaveCheck(id) {
-  const m = waveData.find(m => m.id === id);
-  if (m) { m.checked = !m.checked; saveWave(); renderWaveTable(); calcWave(); }
+function saveWaveSettings(){
+  const w=wavesData[activeWaveIdx]; if(!w) return;
+  w.inductionDate=document.getElementById('wave-induction').value;
+  w.target=+document.getElementById('wave-target').value||20;
+  saveWaves();
 }
 
-function toggleWaveRollover(id) {
-  const m = waveData.find(m => m.id === id);
-  if (m) { m.rollover = !m.rollover; saveWave(); renderWaveTable(); calcWave(); }
+function calcWave(){
+  const w=wavesData[activeWaveIdx]; if(!w) return;
+  const total=w.members.length, checked=w.members.filter(m=>m.checked).length, rollovers=w.members.filter(m=>m.rollover).length;
+  const rp=fRoll(rollovers,total);
+  s$('ws-wave',w.label||'—'); s$('ws-total',total); s$('ws-checked',checked); s$('ws-rollovers',rollovers); s$('ws-pct',rp!==null?pct(rp):'—');
+  applyKC('ws-pct-card',kSt(rp,80,true));
+  const lbl=document.getElementById('wave-ind-lbl');
+  if(w.inductionDate) lbl.textContent='Induction: '+fd8(w.inductionDate);
+  refreshRollKPIs();
 }
 
-function deleteWaveMember(id) {
-  waveData = waveData.filter(m => m.id !== id);
-  saveWave(); renderWaveTable(); calcWave();
+function addWaveMember(){
+  const first=document.getElementById('wm-first').value.trim(); if(!first){toast('First name required');return;}
+  const w=wavesData[activeWaveIdx]; if(!w) return;
+  w.members.push({id:Date.now(),checked:false,rollover:false,first,
+    last:document.getElementById('wm-last').value.trim(), email:document.getElementById('wm-email').value.trim(),
+    phone:document.getElementById('wm-phone').value.trim(), goal:document.getElementById('wm-goal').value.trim(),
+    why:document.getElementById('wm-why').value.trim(), notes:document.getElementById('wm-notes').value.trim()});
+  saveWaves(); renderWaveMemberTable(); calcWave(); clearWaveForm(); toast('Member added');
 }
 
-function renderWaveTable() {
-  const tbody = document.getElementById('wave-tbody');
-  if (!waveData.length) {
-    tbody.innerHTML = '<tr><td colspan="11"><div class="empty-state">No members yet. Add above or click "+ Add member".</div></td></tr>';
-    return;
-  }
-  tbody.innerHTML = waveData.map((m, i) => `<tr>
-    <td style="color:var(--gray-400);font-size:12px;">${i+1}</td>
-    <td>
-      <div class="wave-check ${m.checked ? 'checked' : ''}" onclick="toggleWaveCheck(${m.id})" title="Toggle inducted">
-        ${m.checked ? '✓' : ''}
-      </div>
-    </td>
-    <td>${m.first}</td>
-    <td>${m.last}</td>
-    <td style="font-size:12px;color:var(--gray-600);">${m.email}</td>
-    <td style="font-size:12px;">${m.phone}</td>
-    <td style="font-size:12px;">${m.goal}</td>
-    <td style="font-size:12px;">${m.why}</td>
-    <td style="font-size:12px;color:var(--gray-600);max-width:120px;white-space:normal;">${m.notes}</td>
-    <td>
-      <span class="rollover-badge ${m.rollover ? 'yes' : 'no'}" onclick="toggleWaveRollover(${m.id})">
-        ${m.rollover ? 'Yes' : 'No'}
-      </span>
-    </td>
-    <td><button class="btn btn-secondary btn-sm" onclick="deleteWaveMember(${m.id})">✕</button></td>
+function clearWaveForm(){['wm-first','wm-last','wm-email','wm-phone','wm-goal','wm-why','wm-notes'].forEach(id=>{document.getElementById(id).value='';});}
+
+function togCheck(mid){const w=wavesData[activeWaveIdx];const m=w.members.find(x=>x.id===mid);if(m){m.checked=!m.checked;saveWaves();renderWaveMemberTable();calcWave();}}
+function togRoll(mid){const w=wavesData[activeWaveIdx];const m=w.members.find(x=>x.id===mid);if(m){m.rollover=!m.rollover;saveWaves();renderWaveMemberTable();calcWave();}}
+function delWaveMem(mid){const w=wavesData[activeWaveIdx];w.members=w.members.filter(m=>m.id!==mid);saveWaves();renderWaveMemberTable();calcWave();}
+
+function renderWaveMemberTable(){
+  const tbody=document.getElementById('wave-tbody'), w=wavesData[activeWaveIdx];
+  if(!w||!w.members.length){tbody.innerHTML='<tr class="er"><td colspan="9">No members yet in this wave.</td></tr>';renderWavesAll();return;}
+  tbody.innerHTML=w.members.map((m,i)=>`<tr>
+    <td style="color:var(--gray-400);font-size:11px">${i+1}</td>
+    <td><div class="wc ${m.checked?'on':''}" onclick="togCheck(${m.id})">${m.checked?'✓':''}</div></td>
+    <td><strong>${m.first}</strong></td><td>${m.last}</td>
+    <td style="font-size:12px">${m.phone}</td>
+    <td style="font-size:12px">${m.goal}</td>
+    <td style="font-size:12px;color:var(--gray-400);max-width:100px;white-space:normal">${m.notes}</td>
+    <td><span class="rb ${m.rollover?'rb-y':'rb-n'}" onclick="togRoll(${m.id})">${m.rollover?'✓ Yes':'✗ No'}</span></td>
+    <td><button class="btn bg2 bsm" onclick="delWaveMem(${m.id})">✕</button></td>
   </tr>`).join('');
+  renderWavesAll();
 }
 
-function calcWave() {
-  const total = waveData.length;
-  const checked = waveData.filter(m => m.checked).length;
-  const rollovers = waveData.filter(m => m.rollover).length;
-  const target = +document.getElementById('wave-target').value || 0;
-  const rollPct = total > 0 ? (rollovers / total) * 100 : null;
-
-  document.getElementById('wave-total').textContent = total;
-  document.getElementById('wave-checked').textContent = checked;
-  document.getElementById('wave-rollovers').textContent = rollovers;
-  document.getElementById('wave-pct').textContent = rollPct !== null ? pct(rollPct) : '—';
-
-  const card = document.getElementById('wave-pct-card');
-  card.className = 'kpi-card';
-  if (rollPct !== null) {
-    if (rollPct >= 80) card.classList.add('');
-    else card.classList.add(rollPct >= 50 ? 'warn' : 'danger');
-  }
-
-  // Save settings
-  waveSettings.inductionDate = document.getElementById('wave-induction-date').value;
-  waveSettings.target = document.getElementById('wave-target').value;
-  waveSettings.studio = document.getElementById('wave-studio-in').value;
-  localStorage.setItem('grn_wave_settings', JSON.stringify(waveSettings));
+function renderWavesAll(){
+  const tbody=document.getElementById('waves-all-tbody');
+  if(!wavesData.length){tbody.innerHTML='<tr class="er"><td colspan="8">No waves yet.</td></tr>';return;}
+  tbody.innerHTML=wavesData.map(w=>{
+    const tot=w.members.length, ind=w.members.filter(m=>m.checked).length, roll=w.members.filter(m=>m.rollover).length;
+    const rp=fRoll(roll,tot), st=kSt(rp,80,true);
+    const badge=st==='green'?'<span class="st sg2">On target</span>':st==='amber'?'<span class="st sa">Watch</span>':tot>0?'<span class="st sr">Off target</span>':'<span class="st sn">No data</span>';
+    return `<tr>
+      <td><strong>${w.label}</strong></td>
+      <td>${w.inductionDate?fd8(w.inductionDate):'—'}</td>
+      <td>${tot}</td><td>${ind}</td><td>${roll}</td>
+      <td><strong>${rp!==null?pct(rp):'—'}</strong></td>
+      <td>${w.target||'—'}</td><td>${badge}</td>
+    </tr>`;
+  }).join('');
 }
 
-function updateWaveHeader() {
-  calcWave();
-  const d = document.getElementById('wave-induction-date').value;
-  const el = document.getElementById('wave-induction-display');
-  if (d) el.textContent = 'Induction: ' + formatDate(d);
+// ══════════ EXPORT ══════════
+function exportCSV(){
+  if(!dashData.length){toast('No data');return;}
+  const h=['Week of','Studio','Autopay','Suspended','FB Spend','Paid Leads','Organic Leads','Total Leads','Sales','Memb Sales','Sales Value $','Attendance','Avg Visit','W Cancels','MTD Cancels','Churn %','Conv %','Net','CPL $','Revenue $','Notes'];
+  const rows=dashData.map(r=>[r.date,r.studio,r.autopay,r.suspended,r.fbspend,r.paidleads,r.organicleads,r.totalleads,r.sales,r.membsales,r.salesvalue,r.attendance,num(r.avg),r.weeklycancels,r.cancelsmtd,pct(r.churn),pct(r.conv),r.net,r.cpl?r.cpl.toFixed(2):'',r.revenue,'"'+(r.notes||'').replace(/"/g,'""')+'"']);
+  const csv=[h,...rows].map(r=>r.join(',')).join('\n');
+  const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='Studio_Metrics_'+new Date().toISOString().slice(0,10)+'.csv'; a.click(); toast('CSV downloaded');
 }
 
-function saveWave() {
-  localStorage.setItem('grn_wave', JSON.stringify(waveData));
-}
+// ══════════ UTILS ══════════
+function fd8(d)  { return new Date(d+'T00:00:00').toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'}); }
+function fd4(d)  { return new Date(d+'T00:00:00').toLocaleDateString('en-AU',{day:'2-digit',month:'short'}); }
+function fmtMonth(ym){ const[y,m]=ym.split('-'); return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+y; }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); }
 
-// ═══════════════════════════════════════════════
-// DELETE
-// ═══════════════════════════════════════════════
-function deleteEntry(type, id) {
-  if (!confirm('Delete this entry?')) return;
-  if (type === 'dash') {
-    dashData = dashData.filter(r => r.id !== id);
-    localStorage.setItem('grn_dash', JSON.stringify(dashData));
-    refreshDashboard();
-  } else {
-    scoreData = scoreData.filter(r => r.id !== id);
-    localStorage.setItem('grn_score', JSON.stringify(scoreData));
-    renderScoreMonthSelect();
-    renderScoreTable();
-    updateScoreSummary();
-  }
-  showToast('Entry deleted');
-}
-
-// ═══════════════════════════════════════════════
-// EXPORT CSV
-// ═══════════════════════════════════════════════
-function exportCSV() {
-  if (!dashData.length) { showToast('No data to export'); return; }
-  const headers = ['Week of','Autopay','Paid Leads','Organic Leads','Total Leads','Sales','Conv %','Rollovers','Rollover %','Attendance','Avg Visit','Weekly Cancels','Cancels MTD','Churn %','Net','FB Spend','CPL','Revenue','Sales Value','Notes'];
-  const rows = dashData.map(r => [
-    r.date, r.autopay, r.paidleads, r.organicleads, r.totalleads, r.sales,
-    pct(r.conv), r.rollovers, pct(r.rollover), r.attendance, fmt(r.avgvisit,1),
-    r.weeklycancels, r.cancelsmtd, pct(r.churn), r.net, r.fbspend, fmt(r.cpl,2),
-    r.revenue, r.salesvalue, '"' + (r.notes||'').replace(/"/g,'""') + '"'
-  ]);
-  const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-  a.download = 'GRN_Metrics_' + new Date().toISOString().slice(0,10) + '.csv';
-  a.click();
-  showToast('CSV downloaded');
-}
-
-// ═══════════════════════════════════════════════
-// UTILS
-// ═══════════════════════════════════════════════
-function formatDate(dateStr) {
-  if (!dateStr) return '—';
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString('en-AU', { day:'2-digit', month:'short', year:'numeric' });
-}
-
-function formatDateShort(dateStr) {
-  if (!dateStr) return '—';
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString('en-AU', { day:'2-digit', month:'short' });
-}
-
-function formatMonth(ym) {
-  const [y, m] = ym.split('-');
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return months[+m - 1] + ' ' + y;
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
-}
-
-// Start
 init();
 </script>
 </body>
